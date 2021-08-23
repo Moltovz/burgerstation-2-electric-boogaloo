@@ -165,20 +165,20 @@
 /area/lz_001/forest)
 "aV" = (
 /turf/simulated/floor/stair/wood{
-	icon_state = "stair_left";
-	dir = 1
+	dir = 1;
+	icon_state = "stair_left"
 	},
 /area/lz_001/caves/lagoon)
 "aW" = (
 /turf/simulated/floor/stair/wood{
-	icon_state = "stair_middle";
-	dir = 1
+	dir = 1;
+	icon_state = "stair_middle"
 	},
 /area/lz_001/caves/lagoon)
 "aX" = (
 /turf/simulated/floor/stair/wood{
-	icon_state = "stair_right";
-	dir = 1
+	dir = 1;
+	icon_state = "stair_right"
 	},
 /area/lz_001/caves/lagoon)
 "aY" = (
@@ -300,6 +300,10 @@
 "cK" = (
 /turf/unsimulated/generation/surface/surface_turf,
 /area/lz_001/forest/village)
+"cL" = (
+/mob/living/advanced/npc/syndicate/double,
+/turf/simulated/floor/tile/dark,
+/area/lz_001/outpost/syndicate/desert)
 "cN" = (
 /obj/marker/syndicate,
 /turf/unsimulated/generation/surface/cave_path_turf,
@@ -354,8 +358,8 @@
 /area/lz_001/forest)
 "do" = (
 /obj/structure/interactive/barricade{
-	icon_state = "metal";
-	dir = 8
+	dir = 8;
+	icon_state = "metal"
 	},
 /turf/unsimulated/generation/surface/cave_path_turf,
 /area/lz_001/forest/village)
@@ -438,8 +442,8 @@
 	pixel_x = 32
 	},
 /obj/structure/interactive/misc/sink{
-	icon_state = "sink";
-	dir = 4
+	dir = 4;
+	icon_state = "sink"
 	},
 /turf/simulated/floor/tile/morphing,
 /area/lz_001/outpost/syndicate/jungle)
@@ -614,8 +618,8 @@
 /area/lz_001/outpost/syndicate/jungle)
 "eG" = (
 /mob/living/advanced/npc/syndicate/quadruple{
-	icon_state = "directional";
-	dir = 8
+	dir = 8;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/tile/dark,
 /area/lz_001/outpost/syndicate/jungle)
@@ -807,8 +811,8 @@
 /area/lz_001/jungle)
 "fJ" = (
 /obj/structure/interactive/barricade{
-	icon_state = "metal";
-	dir = 1
+	dir = 1;
+	icon_state = "metal"
 	},
 /turf/unsimulated/generation/surface/cave_path_turf,
 /area/lz_001/caves/desert_cave)
@@ -1020,12 +1024,12 @@
 /area/lz_001/forest/village)
 "gX" = (
 /obj/structure/interactive/barricade{
-	icon_state = "metal";
-	dir = 8
+	dir = 8;
+	icon_state = "metal"
 	},
 /turf/simulated/floor/cobblestone/corner{
-	icon_state = "cobble_corner";
-	dir = 1
+	dir = 1;
+	icon_state = "cobble_corner"
 	},
 /area/lz_001/forest)
 "gY" = (
@@ -1044,18 +1048,18 @@
 /area/lz_001/caves/knight)
 "hc" = (
 /obj/structure/interactive/barricade{
-	icon_state = "metal";
-	dir = 8
+	dir = 8;
+	icon_state = "metal"
 	},
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 8
+	dir = 8;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest)
 "hd" = (
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 4
+	dir = 4;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest)
 "he" = (
@@ -1079,8 +1083,8 @@
 /area/lz_001/caves/lagoon)
 "hj" = (
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 8
+	dir = 8;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest)
 "hk" = (
@@ -1088,8 +1092,8 @@
 /area/lz_001/forest)
 "hl" = (
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 1
+	dir = 1;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest/village)
 "hm" = (
@@ -1112,8 +1116,8 @@
 /area/lz_001/forest/village)
 "hr" = (
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 4
+	dir = 4;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest/village)
 "hs" = (
@@ -1122,8 +1126,8 @@
 /area/lz_001/forest/village)
 "ht" = (
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 8
+	dir = 8;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest/village)
 "hu" = (
@@ -1132,18 +1136,18 @@
 /area/lz_001/forest/village)
 "hv" = (
 /obj/structure/interactive/barricade{
-	icon_state = "metal";
-	dir = 8
+	dir = 8;
+	icon_state = "metal"
 	},
 /turf/simulated/floor/cobblestone/corner{
-	icon_state = "cobble_corner";
-	dir = 8
+	dir = 8;
+	icon_state = "cobble_corner"
 	},
 /area/lz_001/forest)
 "hw" = (
 /turf/simulated/floor/cobblestone/corner{
-	icon_state = "cobble_corner";
-	dir = 4
+	dir = 4;
+	icon_state = "cobble_corner"
 	},
 /area/lz_001/forest)
 "hx" = (
@@ -1160,8 +1164,8 @@
 "hD" = (
 /obj/marker/rift_location,
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 8
+	dir = 8;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest/village)
 "hE" = (
@@ -1189,15 +1193,15 @@
 "hU" = (
 /obj/marker/map_node,
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 8
+	dir = 8;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest/village)
 "hV" = (
 /obj/marker/map_node,
 /turf/simulated/floor/cobblestone/corner{
-	icon_state = "cobble_corner";
-	dir = 1
+	dir = 1;
+	icon_state = "cobble_corner"
 	},
 /area/lz_001/forest/village)
 "hW" = (
@@ -1213,31 +1217,31 @@
 /area/lz_001/forest/village)
 "id" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 6
+	dir = 6;
+	icon_state = "line"
 	},
 /obj/structure/interactive/lighting/fixture/floor,
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
 "ie" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 1
+	dir = 1;
+	icon_state = "line"
 	},
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
 "if" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 10
+	dir = 10;
+	icon_state = "line"
 	},
 /obj/structure/interactive/lighting/fixture/floor,
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
 "ii" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 8
+	dir = 8;
+	icon_state = "line"
 	},
 /obj/structure/interactive/mining_brace,
 /turf/simulated/floor/plating,
@@ -1256,16 +1260,16 @@
 /area/lz_001/caves/knight)
 "im" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 4
+	dir = 4;
+	icon_state = "line"
 	},
 /obj/structure/interactive/ore_box,
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
 "iq" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 5
+	dir = 5;
+	icon_state = "line"
 	},
 /obj/structure/interactive/lighting/fixture/floor,
 /turf/simulated/floor/plating,
@@ -1276,8 +1280,8 @@
 /area/lz_001/caves/knight)
 "is" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 9
+	dir = 9;
+	icon_state = "line"
 	},
 /obj/structure/interactive/lighting/fixture/floor,
 /turf/simulated/floor/plating,
@@ -1357,8 +1361,8 @@
 "iS" = (
 /obj/marker/map_node,
 /turf/simulated/floor/cobblestone/side{
-	icon_state = "cobble_side";
-	dir = 1
+	dir = 1;
+	icon_state = "cobble_side"
 	},
 /area/lz_001/forest/village)
 "iT" = (
@@ -1376,8 +1380,8 @@
 /area/lz_001/forest/village)
 "iW" = (
 /turf/simulated/floor/cobblestone/corner{
-	icon_state = "cobble_corner";
-	dir = 4
+	dir = 4;
+	icon_state = "cobble_corner"
 	},
 /area/lz_001/forest/village)
 "iX" = (
@@ -1388,8 +1392,8 @@
 "ja" = (
 /obj/structure/interactive/lighting/fixture/floor,
 /obj/decal/hazard/corner{
-	icon_state = "corner";
-	dir = 1
+	dir = 1;
+	icon_state = "corner"
 	},
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
@@ -1432,15 +1436,15 @@
 /area/lz_001/forest/village/interior/armory)
 "jk" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 4
+	dir = 4;
+	icon_state = "line"
 	},
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
 "jm" = (
 /obj/decal/hazard{
-	icon_state = "line";
-	dir = 8
+	dir = 8;
+	icon_state = "line"
 	},
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
@@ -1462,8 +1466,8 @@
 /area/lz_001/forest/village/interior/bar)
 "jq" = (
 /obj/structure/interactive/misc/sink{
-	icon_state = "sink";
-	dir = 4
+	dir = 4;
+	icon_state = "sink"
 	},
 /turf/simulated/floor/wood/brown,
 /area/lz_001/forest/village/interior/bar)
@@ -1579,8 +1583,8 @@
 /area/lz_001/forest/village/interior/armory)
 "jT" = (
 /obj/structure/interactive/chair/wood{
-	icon_state = "wooden_chair";
-	dir = 4
+	dir = 4;
+	icon_state = "wooden_chair"
 	},
 /turf/simulated/floor/wood/brown,
 /area/lz_001/forest/village/interior/bar)
@@ -1662,15 +1666,15 @@
 /area/lz_001/forest)
 "kk" = (
 /turf/simulated/floor/cobblestone/corner{
-	icon_state = "cobble_corner";
-	dir = 1
+	dir = 1;
+	icon_state = "cobble_corner"
 	},
 /area/lz_001/forest/village)
 "kl" = (
 /obj/structure/interactive/barricade,
 /turf/simulated/floor/cobblestone/corner{
-	icon_state = "cobble_corner";
-	dir = 8
+	dir = 8;
+	icon_state = "cobble_corner"
 	},
 /area/lz_001/forest/village)
 "km" = (
@@ -1680,23 +1684,23 @@
 "kn" = (
 /obj/structure/interactive/barricade,
 /turf/simulated/floor/cobblestone/corner{
-	icon_state = "cobble_corner";
-	dir = 4
+	dir = 4;
+	icon_state = "cobble_corner"
 	},
 /area/lz_001/forest/village)
 "ko" = (
 /obj/structure/interactive/lighting/fixture/floor,
 /obj/decal/hazard/corner{
-	icon_state = "corner";
-	dir = 8
+	dir = 8;
+	icon_state = "corner"
 	},
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
 "kp" = (
 /obj/structure/interactive/lighting/fixture/floor,
 /obj/decal/hazard/corner{
-	icon_state = "corner";
-	dir = 4
+	dir = 4;
+	icon_state = "corner"
 	},
 /turf/simulated/floor/plating,
 /area/lz_001/caves/knight)
@@ -1770,8 +1774,8 @@
 /area/lz_001/desert)
 "ll" = (
 /turf/simulated/floor/stair/wood/dock{
-	icon_state = "stair";
-	dir = 1
+	dir = 1;
+	icon_state = "stair"
 	},
 /area/lz_001/caves/lagoon)
 "lm" = (
@@ -1805,22 +1809,22 @@
 /area/lz_001/caves/lagoon/ship)
 "lv" = (
 /mob/living/advanced/npc/pirate_crew/ranged{
-	icon_state = "directional";
-	dir = 1
+	dir = 1;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat,
 /area/lz_001/caves/lagoon/ship)
 "lw" = (
 /mob/living/advanced/npc/pirate_crew/magic{
-	icon_state = "directional";
-	dir = 1
+	dir = 1;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat,
 /area/lz_001/caves/lagoon/ship)
 "lx" = (
 /mob/living/advanced/npc/pirate_crew/melee{
-	icon_state = "directional";
-	dir = 1
+	dir = 1;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat,
 /area/lz_001/caves/lagoon/ship)
@@ -1837,8 +1841,8 @@
 /area/lz_001/caves/lagoon/ship)
 "lB" = (
 /turf/simulated/floor/stair/wood{
-	icon_state = "stair";
-	dir = 4
+	dir = 4;
+	icon_state = "stair"
 	},
 /area/lz_001/caves/lagoon/ship)
 "lC" = (
@@ -1851,15 +1855,15 @@
 /area/lz_001/caves/lagoon/ship)
 "lE" = (
 /mob/living/advanced/npc/pirate_crew/ninja{
-	icon_state = "directional";
-	dir = 4
+	dir = 4;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat/starting,
 /area/lz_001/caves/lagoon/ship)
 "lF" = (
 /mob/living/advanced/npc/pirate_crew/magic{
-	icon_state = "directional";
-	dir = 4
+	dir = 4;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat/starting,
 /area/lz_001/caves/lagoon/ship)
@@ -1869,8 +1873,8 @@
 /area/lz_001/caves/lagoon/ship)
 "lH" = (
 /mob/living/advanced/npc/pirate_crew/melee{
-	icon_state = "directional";
-	dir = 4
+	dir = 4;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat/starting,
 /area/lz_001/caves/lagoon/ship)
@@ -1880,8 +1884,8 @@
 /area/lz_001/caves/lagoon/ship)
 "lK" = (
 /mob/living/advanced/npc/pirate_crew/ranged{
-	icon_state = "directional";
-	dir = 8
+	dir = 8;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat/starting,
 /area/lz_001/caves/lagoon/ship)
@@ -1899,21 +1903,21 @@
 /area/lz_001/caves/lagoon/ship)
 "lO" = (
 /mob/living/advanced/npc/unique/pirate_mate{
-	icon_state = "directional";
-	dir = 4
+	dir = 4;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat/starting,
 /area/lz_001/caves/lagoon/ship)
 "lP" = (
 /turf/simulated/floor/stair/wood{
-	icon_state = "stair";
-	dir = 8
+	dir = 8;
+	icon_state = "stair"
 	},
 /area/lz_001/caves/lagoon/ship)
 "lR" = (
 /mob/living/advanced/npc/unique/pirate_captain{
-	icon_state = "directional";
-	dir = 4
+	dir = 4;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat/starting,
 /area/lz_001/caves/lagoon/ship)
@@ -1923,8 +1927,8 @@
 /area/lz_001/caves/lagoon)
 "lT" = (
 /mob/living/advanced/npc/pirate_crew/melee{
-	icon_state = "directional";
-	dir = 1
+	dir = 1;
+	icon_state = "directional"
 	},
 /turf/simulated/floor/wood/boat/starting,
 /area/lz_001/caves/lagoon/ship)
@@ -1944,8 +1948,8 @@
 /area/lz_001/caves/desert_cave)
 "md" = (
 /obj/structure/interactive/barricade{
-	icon_state = "metal";
-	dir = 1
+	dir = 1;
+	icon_state = "metal"
 	},
 /turf/simulated/floor/colored/sand,
 /area/lz_001/caves/desert_cave)
@@ -2038,7 +2042,7 @@
 /turf/simulated/floor/tile/dark,
 /area/lz_001/outpost/syndicate/desert)
 "mN" = (
-/obj/marker/spawning/random/object_of_interest,
+/obj/structure/interactive/crate/chest/filled,
 /turf/simulated/floor/tile/dark,
 /area/lz_001/outpost/syndicate/desert)
 "mO" = (
@@ -2082,6 +2086,29 @@
 /obj/structure/interactive/lighting/fixture/tube/syndicate{
 	dir = 1
 	},
+/turf/simulated/floor/tile/dark,
+/area/lz_001/outpost/syndicate/desert)
+"yP" = (
+/obj/structure/interactive/lighting/fixture/tube/syndicate{
+	dir = 8
+	},
+/mob/living/advanced/npc/syndicate/scientist,
+/turf/simulated/floor/tile/dark,
+/area/lz_001/outpost/syndicate/desert)
+"Dm" = (
+/mob/living/advanced/npc/syndicate/scientist,
+/turf/unsimulated/generation/surface/cave_path_turf,
+/area/lz_001/caves/desert_cave)
+"RQ" = (
+/mob/living/advanced/npc/syndicate,
+/turf/simulated/floor/tile/dark,
+/area/lz_001/outpost/syndicate/desert)
+"Un" = (
+/mob/living/advanced/npc/syndicate/quadruple,
+/turf/simulated/floor/tile/dark,
+/area/lz_001/outpost/syndicate/desert)
+"Xj" = (
+/mob/living/advanced/npc/syndicate/scientist,
 /turf/simulated/floor/tile/dark,
 /area/lz_001/outpost/syndicate/desert)
 
@@ -49108,7 +49135,7 @@ fw
 mo
 mA
 mt
-mt
+Un
 mB
 mt
 mo
@@ -49363,7 +49390,7 @@ lb
 fw
 fw
 mo
-mA
+mN
 mt
 mu
 mt
@@ -50135,7 +50162,7 @@ mc
 fw
 mo
 mt
-mt
+cL
 mt
 mA
 mo
@@ -52447,7 +52474,7 @@ mo
 mA
 mA
 mt
-mt
+cL
 mt
 mo
 mc
@@ -53474,11 +53501,11 @@ fw
 mo
 mA
 mt
-mt
+cL
 mt
 mt
 mp
-fw
+Dm
 fw
 mc
 lb
@@ -53987,7 +54014,7 @@ fw
 fw
 mo
 ms
-mM
+yP
 mt
 mu
 mt
@@ -54500,7 +54527,7 @@ fw
 fw
 mo
 mA
-mt
+mN
 mt
 mt
 mu
@@ -54758,7 +54785,7 @@ fw
 mo
 mE
 mt
-mB
+cL
 mt
 mt
 mt
@@ -55531,7 +55558,7 @@ mA
 mH
 mt
 mt
-mt
+cL
 mt
 mt
 mo
@@ -55785,12 +55812,12 @@ fw
 fw
 mo
 mA
+Xj
 mt
 mt
 mt
 mt
 mt
-mB
 mo
 mc
 mc
@@ -56043,11 +56070,11 @@ fw
 mo
 ms
 mA
-mN
+mt
 mM
 mu
 mt
-mt
+RQ
 mo
 mc
 mc
@@ -56813,9 +56840,9 @@ mt
 mt
 mt
 mt
+Un
 mt
 mt
-mB
 mt
 mt
 mt
@@ -57074,7 +57101,7 @@ mt
 mt
 mt
 mt
-mt
+mB
 mU
 mo
 mc
@@ -57843,7 +57870,7 @@ mc
 mc
 mc
 mo
-mt
+RQ
 mt
 mt
 mo
