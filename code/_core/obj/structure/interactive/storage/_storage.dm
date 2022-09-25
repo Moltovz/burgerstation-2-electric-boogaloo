@@ -155,3 +155,100 @@
 	layer = 1000
 
 	pixel_y = 10
+
+/obj/structure/interactive/storage/bookshelf
+	name = "bookshelf"
+	desc = "Know ledge"
+	desc_extended = "A shelf for storing books that you will never read, but use to make conversation"
+	icon = 'icons/obj/structure/bookcase.dmi'
+	icon_state = "book-[rand(1-5)]"
+
+	stored_loot = /loot/misc/bookshelf
+
+/obj/structure/interactive/storage/trashcan
+	name = "trash can"
+	desc = "Your opinions"
+	desc_extended = "A trash can made from a broken disposals inlet."
+	icon = 'icons/obj/structure/trash_piles.dmi'
+	icon_state = "ghettocan"
+
+	stored_loot = /loot/misc/trashcan
+
+/obj/structure/interactive/storage/guncase
+	name = "secure case"
+	desc = "loot."
+	desc_extended = "A crate this one seems to contain weapons and ammo."
+	icon = 'icons/obj/structure/crates.dmi'
+	icon_state = "gungreen"
+
+	stored_loot = /loot/misc/guncase
+
+/obj/structure/interactive/storage/guncase/black
+	name = "elite secure case"
+	desc = "like the green one but more gooder!"
+	desc_extended = "A crate, this one seems to contain weapons, ammo, and more!"
+	icon = 'icons/obj/structure/crates.dmi'
+	icon_state = "gunblack"
+
+	stored_loot = /loot/misc/guncase/black
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/dresser
+
+	stored_loot = /loot/misc/dresser
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/toolbox
+
+	stored_loot = /loot/misc/toolbox
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/medical/
+
+	stored_loot = /loot/misc/medical
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/medical/cabinet
+
+	stored_loot = /loot/misc/medical/cabinet
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/brokenvendor
+
+	stored_loot = /loot/misc/brokenvendor
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/brokenvendor/food
+
+	stored_loot = /loot/misc/brokenvendor/food
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/brokenvendor/cigarette
+
+	stored_loot = /loot/misc/brokenvendor/cigarette
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/brokenvendor/medical
+
+	stored_loot = /loot/misc/brokenvendor/medical
+
+
+//tarkov references below this line -----------
+/obj/structure/interactive/storage/computer
+
+	stored_loot = /loot/misc/computer
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/stash //we tarkov now
+
+	stored_loot = /loot/misc/stash
+
+//linebreak for my sanity ----------
+/obj/structure/interactive/storage/stash/grassy
+
+	stored_loot = /loot/misc/stash/grassy
+
+
+//Cataclysm references below this line -------------
+
+//Ill do something with crate.dmi later. Maybe make a warehouse prefab???
