@@ -4,13 +4,11 @@
 	desc_extended = "Costs mana to use."
 	cost_mana = 100
 
-	icon = 'icons/obj/items/weapons/ranged/magic/tomes/holy_summon.dmi'
-
-	associated_skill = SKILL_PRAYER
+	icon = 'icons/obj/item/weapons/ranged/magic/tomes/holy_summon.dmi'
 
 	projectile = /obj/projectile/bullet/holy_summon
 
-	shoot_sounds = list('sounds/weapons/magic/summon.ogg')
+	shoot_sounds = list('sound/weapons/magic/summon.ogg')
 
 	projectile_speed = 3
 

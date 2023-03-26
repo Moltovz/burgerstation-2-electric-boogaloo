@@ -13,8 +13,8 @@
 		return ..()
 
 	var/turf/T = get_turf(hit_atom)
-	if(!T.is_safe_teleport())
-		return ..()
+	//if(!T.is_safe_teleport())
+	//	return ..()
 
 	var/atom/movable/summoned_object = new object_to_summon(P.previous_loc)
 	if(is_living(P.owner))
@@ -31,11 +31,11 @@
 			L.set_loyalty_tag(L2.loyalty_tag)
 			L.master = L2
 			L.minion_remove_time = world.time + duration
-			L.level = min(L2.level,L2.get_skill_power(SKILL_MAGIC_DEFENSIVE,1,100,200) * (cost_mana/100))
+			L.level = min(L2.level,L2.get_skill_power(SKILL_MAGIC,1,100,200) * (cost_mana/100))
 			L.status_immune[DISARM] = TRUE
 			L2.minion = L
 		if(L2.is_player_controlled())
-			L2.add_skill_xp(SKILL_MAGIC_DEFENSIVE,cost_mana*1.5)
+			L2.add_skill_xp(SKILL_MAGIC,cost_mana*1.5)
 	INITIALIZE(summoned_object)
 	GENERATE(summoned_object)
 	FINALIZE(summoned_object)
