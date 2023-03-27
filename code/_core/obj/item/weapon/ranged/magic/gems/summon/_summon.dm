@@ -1,4 +1,4 @@
-/obj/item/weapon/ranged/magic/tome/summon
+/obj/item/weapon/ranged/magic/gem/summon
 	shoot_sounds = list('sound/weapons/magic/summon.ogg')
 	projectile_speed = 8
 	shoot_delay = 30
@@ -7,7 +7,7 @@
 	var/atom/movable/object_to_summon
 	var/duration = SECONDS_TO_DECISECONDS(300) //In deciseconds. Only applies to summoning mobs.
 
-/obj/item/weapon/ranged/magic/tome/summon/on_projectile_hit(var/obj/projectile/P,var/atom/hit_atom)
+/obj/item/weapon/ranged/magic/gem/summon/on_projectile_hit(var/obj/projectile/P,var/atom/hit_atom)
 
 	if(istype(P,/obj/projectile/bullet/thrown/))
 		return ..()

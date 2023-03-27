@@ -3,7 +3,7 @@
 	desc = "*Frog explosion Sounds*"
 	desc_extended = "A less than docile frog."
 	icon = 'icons/mob/living/simple/frog.dmi'
-	icon_state = "living"
+	icon_state = "boom"
 	damage_type = /damagetype/unarmed/bite/
 
 
