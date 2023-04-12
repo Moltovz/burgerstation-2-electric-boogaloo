@@ -77,8 +77,6 @@
 
 	A.health.adjust_mana(-mana_cost)
 
-//	A.update_health_element_icons(mana=TRUE) the fuck is this anyway -v
-
 	A.mana_regen_delay = max(A.mana_regen_delay,30)
 
 	return null

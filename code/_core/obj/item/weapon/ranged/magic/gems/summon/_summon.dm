@@ -13,8 +13,6 @@
 		return ..()
 
 	var/turf/T = get_turf(hit_atom)
-	//if(!T.is_safe_teleport())
-	//	return ..()
 
 	var/atom/movable/summoned_object = new object_to_summon(P.previous_loc)
 	if(is_living(P.owner))
