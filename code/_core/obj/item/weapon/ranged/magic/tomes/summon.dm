@@ -1,4 +1,4 @@
-/obj/item/weapon/ranged/magic/tome/holy_warrior //TODO:FIX THIS
+/obj/item/weapon/ranged/magic/tome/holy_warrior //TODO:FIX THIS //Or dont
 	name = "tome of the holy warrior"
 	desc = "For those too lazy for combat."
 	desc_extended = "Costs mana to use."

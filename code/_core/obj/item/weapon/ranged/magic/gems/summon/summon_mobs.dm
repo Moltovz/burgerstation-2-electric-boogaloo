@@ -1,3 +1,4 @@
+/*
 /obj/item/weapon/ranged/magic/gem/summon/skeleton
 	name = "summoning tome of skeletons"
 	desc = "None."
@@ -36,13 +37,13 @@
 
 /obj/item/weapon/ranged/magic/gem/summon/exploding_frog
 	name = "summoning tome of the exploding frog"
-	desc = "None."
+	desc = "Just like that one game."
 	desc_extended = "Summons a powerful exploding frog to fight for you for 5 minutes. Costs mana to use."
 	icon = 'icons/obj/item/weapons/ranged/magic/tomes/gem.dmi'
 
-	cost_mana = 50
-
 	object_to_summon = /mob/living/simple/exploding_frog
+
+	cost_mana = 50
 
 	value = 5000
 
@@ -129,3 +130,4 @@
 	object_to_summon = /mob/living/advanced/npc/goblin/mage
 
 	value = 3000
+*/
