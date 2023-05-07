@@ -1,4 +1,8 @@
 /obj/item/weapon/ranged/magic/gem/summon
+	name = "filled soul gem"
+	desc = "yeah something like that"
+	desc_extended = "summons whichever creature is trapped inside to fight for you"
+
 	shoot_sounds = list('sound/weapons/magic/summon.ogg')
 	projectile_speed = 8
 	shoot_delay = 30
@@ -6,6 +10,19 @@
 
 	var/atom/movable/object_to_summon
 	var/duration = SECONDS_TO_DECISECONDS(300) //In deciseconds. Only applies to summoning mobs.
+
+/obj/item/weapon/ranged/magic/gem/summon/click_on_object(var/mob/caller as mob,var/atom/object,location,control,params)
+	if(istype(object,/mob/living/simple))
+
+		var/mob/living/simple/S = object_to_summon
+		caller.visible_message(span("danger","\The [caller.name] traps \the [S.name] with \the [src.name]!"),span("warning","You contain \the [S.name] within \the [src.name]!"))
+
+		if(is_living(caller))
+			var/mob/living/L = caller
+			L.add_skill_xp(SKILL_SUMMONING,CEILING(S.soul_size*0.01,1))
+		qdel(S)
+		qdel(src)
+		return TRUE
 
 /obj/item/weapon/ranged/magic/gem/summon/on_projectile_hit(var/obj/projectile/P,var/atom/hit_atom)
 

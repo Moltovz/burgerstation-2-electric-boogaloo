@@ -1,7 +1,7 @@
 /obj/item/weapon/ranged/magic/gem/
-	name = "filled soul gem"
-	desc = "yeah something like that"
-	desc_extended = "summons whichever creature is trapped inside to fight for you"
+	name = "magic gem"
+	desc = "yeah ok"
+	desc_extended = "a magical gem"
 
 	icon = 'icons/obj/item/weapons/ranged/magic/tomes/gem.dmi'
 

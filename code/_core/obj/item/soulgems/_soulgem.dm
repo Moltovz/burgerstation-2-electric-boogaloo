@@ -136,7 +136,7 @@
 
 		return TRUE
 
-//CAPTURING MOBS FOR SUMMONING
+/*
 	if(istype(object,/mob/living/simple))
 
 		var/mob/living/simple/S = object
@@ -162,9 +162,9 @@
 		GENERATE(summonmob)
 		FINALIZE(summonmob)
 		new g(caller.loc)
-
-
 		return TRUE
+*/
+
 //WND OF CAPTURING MOBS FOR SUMMONING
 
 	return ..()
