@@ -159,3 +159,7 @@
 	name = "bullet"
 	icon = 'icons/obj/projectiles/flintlock.dmi'
 	icon_state = "iron"
+
+/obj/projectile/bullet/thrown
+
+/obj/projectile/bullet/holy_summon

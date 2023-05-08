@@ -7,6 +7,10 @@
 
 	var/total_charge = 0
 	var/total_capacity = 0
+
+	var/atom/movable/object_to_summon
+	var/duration = SECONDS_TO_DECISECONDS(300) //In deciseconds. Only applies to summoning mobs.
+
 	var/do_not_consume = FALSE //Does this get consumed? Or merely emptied on craft. Only used for Azuras Star
 
 	value = 100 //Dummy value. Calculated later.
@@ -113,6 +117,23 @@
 
 		return TRUE
 
+//forsummoningshit
+	if(istype(object,/mob/living/simple)) //THIS CODE IS LIKE THIS BECAUSE I WAS SEEING IF CLICKONOBJECT WAS BROKEN
+		var/mob/living/simple/S = object_to_summon
+		if(total_charge != total_capacity)
+			caller.visible_message(span("danger","You need a filled soulgem to capture a creature!"))
+			return FALSE
+		if(is_living(caller))
+			//var/mob/living/simple/S = object_to_summon
+			caller.visible_message(span("danger","\The [caller.name] traps \the [S.name] with \the [src.name]!"),span("warning","You contain \the [S.name] within \the [src.name]!"))
+			var/mob/living/L = caller
+			L.add_skill_xp(SKILL_SUMMONING,CEILING(S.soul_size*0.01,1))
+		qdel(S)
+		qdel(src)
+		return TRUE
+
+
+
 	if(istype(object,/obj/item/weapon/ranged/magic/staff/))
 
 		INTERACT_CHECK
@@ -135,6 +156,37 @@
 		update_sprite()
 
 		return TRUE
+
+/*
+	if(istype(object,/mob/living/simple))
+
+		var/mob/living/simple/S = object
+/*
+		if(total_charge != 0)
+			var/response = input(caller,"You are about to use \The [src.name] to capture a summon, this will delete the filled gem! Do you want to continue?") as null|anything in list("Continue","Cancel")
+			if(response != "Continue")
+				caller.to_chat(span("thought","You decide not to capture the [S.name]"))
+				return TRUE
+			return FALSE
+*/
+		caller.visible_message(span("danger","\The [caller.name] traps \the [S.name] with \the [src.name]!"),span("warning","You contain \the [S.name] within \the [src.name]!"))
+
+		if(is_living(caller))
+			var/mob/living/L = caller
+			L.add_skill_xp(SKILL_SUMMONING,CEILING(S.soul_size*0.01,1))
+		qdel(S)
+		qdel(src)
+
+		var/obj/item/weapon/ranged/magic/gem/summon/g
+		summonmob.object_to_summon = S
+		INITIALIZE(summonmob)
+		GENERATE(summonmob)
+		FINALIZE(summonmob)
+		new g(caller.loc)
+		return TRUE
+*/
+
+//WND OF CAPTURING MOBS FOR SUMMONING
 
 	return ..()
 
