@@ -19,7 +19,7 @@
 		/obj/item/clothing/feet/shoes/sandal,
 		/obj/item/clothing/feet/shoes/sandal/left,
 
-		/obj/item/clothing/hands/gloves/recall,
+		,
 		/obj/item/clothing/belt/damage_deferal_shield,
 		/obj/item/weapon/ranged/energy/abductor
 	)
