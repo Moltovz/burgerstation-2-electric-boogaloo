@@ -10,16 +10,23 @@ SUBSYSTEM_DEF(power)
 	var/list/power_network/all_power_networks = list()
 	var/list/area/all_apc_areas = list()
 
+
+/subsystem/power/unclog(var/mob/caller)
+	tick_rate = -1
+	. = ..()
+
 /subsystem/power/Initialize()
 	. = ..()
 	for(var/k in SSarea.all_areas)
 		var/area/A = SSarea.all_areas[k]
+		if(!A || A.qdeleting)
+			continue
 		if(!A.requires_power)
 			continue
 		if(!A.linked_apc && A.link_to_parent_apc)
 			var/area/PA = SSarea.all_areas[A.parent_type]
 			while(TRUE)
-				CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+				CHECK_TICK_HARD
 				if(!PA)
 					break
 				if(PA.type == /area/) //End of the road.
@@ -37,7 +44,7 @@ SUBSYSTEM_DEF(power)
 		A.toggle_power_lights(A.default_state_power_lights,force=TRUE)
 		A.toggle_power_machines(A.default_state_power_machines,force=TRUE)
 		A.toggle_power_doors(A.default_state_power_doors,force=TRUE)
-		CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+		CHECK_TICK_HARD
 
 	log_subsystem(src.name,"Created [length(all_power_networks)] power networks at Initialize().")
 	log_subsystem(src.name,"Created [length(all_apc_areas)] APC areas at Initialize().")
@@ -46,12 +53,18 @@ SUBSYSTEM_DEF(power)
 
 	for(var/k in all_apc_areas)
 		var/area/A = k
+		if(!A || A.qdeleting)
+			all_apc_areas -= k
+			continue
 		A.apc_process()
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 	for(var/k in all_power_networks)
 		var/power_network/PN = k
+		if(!PN || PN.qdeleting)
+			all_power_networks -= k
+			continue
 		PN.power_process()
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 	return TRUE

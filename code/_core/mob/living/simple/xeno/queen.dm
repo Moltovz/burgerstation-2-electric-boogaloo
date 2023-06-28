@@ -77,7 +77,7 @@ var/mob/living/simple/xeno/queen/tracked_xeno_queen
 	return ..()
 
 
-/mob/living/simple/xeno/queen/Destroy()
+/mob/living/simple/xeno/queen/PreDestroy()
 
 	if(tracked_xeno_queen && tracked_xeno_queen == src)
 		tracked_xeno_queen = null
@@ -116,7 +116,7 @@ var/mob/living/simple/xeno/queen/tracked_xeno_queen
 
 	if(N_end)
 		for(var/mob/living/simple/xeno/X in SSliving.all_living)
-			CHECK_TICK_SAFE(75,FPS_SERVER)
+			CHECK_TICK(75,FPS_SERVER)
 			if(X == src)
 				continue
 			if(X.dead || !X.ai)

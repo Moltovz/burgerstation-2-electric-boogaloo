@@ -33,15 +33,16 @@
 	RUN_PARENT_SAFE
 	LOADATOM("battery")
 
+// CELL_SIZE_BASIC is 50000
+// CELL_SIZE_ADVANCED is 100000
+// a 100 damage laser weapon (with 50 armor pen) should have 40 hits in a CELL_SIZE_BASIC cell.
+
 /obj/item/weapon/ranged/energy/proc/get_charge_cost()
 	if(!ranged_damage_type)
 		return 0
-	var/cell_mod = battery && battery.charge_max > 0 ? battery.charge_max : CELL_SIZE_BASIC
-	cell_mod = cell_mod / 200
-	cell_mod = CEILING(cell_mod,1)
 	var/damagetype/D = all_damage_types[ranged_damage_type]
-	. = D.get_damage_per_hit(100) * 3
-	return CEILING(.,cell_mod)
+	. = (D.get_damage_per_hit(50) / 100) * (CELL_SIZE_BASIC / 40)
+	return CEILING(.,10)
 
 /obj/item/weapon/ranged/energy/Finalize()
 

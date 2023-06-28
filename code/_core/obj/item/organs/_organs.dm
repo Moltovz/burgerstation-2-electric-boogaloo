@@ -79,6 +79,16 @@
 
 	var/armor/armor = /armor/default_organic
 
+/obj/item/organ/New(var/desired_loc)
+	. = ..()
+	attached_organs = list()
+
+/obj/item/organ/PreDestroy()
+	color = "#C284FF" //Absurd color. This makes it easier to identify issues.
+	attached_organ = null
+	attached_organs?.Cut()
+	. = ..()
+
 /obj/item/organ/proc/check_hit_chance(var/atom/attacker,var/atom/weapon,var/damagetype/damage_type,var/list/params = list(),var/accurate=FALSE,var/find_closest=FALSE,var/inaccuracy_modifier=1)
 
 	if(projectile_dodge_chance > 0 && !accurate && !find_closest && get_dist(src,attacker) > 1)
@@ -106,16 +116,6 @@
 		returning_object = src
 
 	return returning_object
-
-/obj/item/organ/New(var/desired_loc)
-	. = ..()
-	attached_organs = list()
-
-/obj/item/organ/Destroy()
-	color = "#C284FF" //Absurd color. This makes it easier to identify issues.
-	attached_organ = null
-	attached_organs?.Cut()
-	. = ..()
 
 /obj/item/organ/get_base_transform()
 	. = ..()
@@ -228,7 +228,8 @@
 	var/list/valid_organs = list()
 	for(var/k in src.attached_organs)
 		var/obj/item/organ/AO = k
-		if(AO.qdeleting)
+		if(!AO || AO.qdeleting)
+			attached_organs -= k
 			continue
 		if(!AO.can_be_targeted) //Internal organ.
 			continue

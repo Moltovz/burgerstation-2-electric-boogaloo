@@ -17,6 +17,8 @@
 
 	health_base = 1000
 
+	wet_floor_icon_state = "tile"
+
 /turf/simulated/floor/plating/reinforced
 	name = "reinforced plating"
 	icon_state = "filled3"
@@ -24,7 +26,10 @@
 
 	destruction_turf = /turf/simulated/floor/plating
 
-	health_base = 1000
+	health_base = 2000
+
+/turf/simulated/floor/plating/reinforced/dark
+	color = COLOR_STEEL_DARK
 
 /turf/simulated/floor/plating/snow
 	name = "snowed plating"

@@ -58,7 +58,7 @@
 
 /mob/living/simple/slime/on_life_slow()
 	. = ..()
-	if((slime_traits & SLIME_TRAIT_UNSTABLE) && !qdeleting && !dead && !prob(80))
+	if((slime_traits & SLIME_TRAIT_UNSTABLE) && !dead && !prob(80))
 		var/list/valid_turfs = list()
 		for(var/turf/simulated/floor/F in orange(src,VIEW_RANGE*0.5))
 			if(!F.is_safe() || !F.can_move_to(check_contents=FALSE))
@@ -112,7 +112,7 @@
 
 /mob/living/simple/slime/get_plane()
 	if(slime_traits & SLIME_TRAIT_STEALTH)
-		return PLANE_MOB_STEALTH
+		return PLANE_MOVABLE_STEALTH
 	. = ..()
 
 
@@ -243,9 +243,9 @@
 				S.name = initial(src.name)
 			INITIALIZE(S)
 			FINALIZE(S)
-			if(S.health)
-				S.health.damage = src.health.damage.Copy()
-			S.health.update_health()
+			if(S.ai)
+				S.ai.set_active(TRUE)
+				S.ai.find_new_objectives(AI_TICK,TRUE)
 			var/turf/T = get_step(src,pick(DIRECTIONS_ALL))
 			if(T) S.Move(T)
 		var/turf/T = get_step(src,pick(DIRECTIONS_ALL))
@@ -254,7 +254,6 @@
 		src.health.update_health()
 		src.update_sprite()
 		src.add_status_effect(STUN,20,20)
-		create_alert(VIEW_RANGE,T,null,ALERT_LEVEL_CAUTION) //Wake the new slimes.
 		return FALSE
 
 

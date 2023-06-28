@@ -5,7 +5,7 @@
 	icon = 'icons/obj/item/plate.dmi'
 	icon_state = "plate_medium"
 	mouse_opacity = 1
-	layer = -1000
+	layer = LAYER_OBJ_ITEM - 1
 	size = SIZE_4
 	weight = 1
 	value = 10
@@ -76,7 +76,7 @@
 	. = ..()
 	. += div("notice","This object holds up to [max_load] items that are size [max_size] or lower.")
 
-/obj/item/plate/Crossed(atom/movable/O)
+/obj/item/plate/Crossed(atom/movable/O,atom/OldLoc)
 	. = ..()
 
 	if(!broken && O.loc == src.loc && is_item(O) && !istype(O,/obj/item/plate) && length(contents) < max_load)

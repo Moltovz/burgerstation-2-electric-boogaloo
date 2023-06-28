@@ -24,7 +24,7 @@
 		/obj/item/storage/pillbottle/dylovene_small,
 		/obj/item/storage/pillbottle/iron_small,
 		/obj/item/storage/pillbottle/antihol_small,
-		/obj/item/storage/pillbottle/assprin,
+		/obj/item/storage/pillbottle/consumer/painkillers,
 		/obj/item/container/blood_pack/full/o_negative,
 		/obj/item/container/blood_pack/full/reptile,
 		/obj/item/container/blood_pack/full/rad_be_gone,
@@ -58,39 +58,6 @@
 	. = ..()
 	if(icon_state == initial(icon_state))
 		icon_state = "wallmed_nomap"
-
-#define LAZY_BEAKER(x) /obj/item/container/simple/beaker/vendor{reagent=x}
-
-/obj/structure/interactive/vending/medical/chemistry
-	name = "chemical vendor"
-	icon_state = "smartfridge2"
-	stored_types = list(
-		LAZY_BEAKER(/reagent/nutrition/water),
-		LAZY_BEAKER(/reagent/carbon),
-		LAZY_BEAKER(/reagent/iron),
-		LAZY_BEAKER(/reagent/copper),
-		LAZY_BEAKER(/reagent/silver),
-		LAZY_BEAKER(/reagent/aluminium),
-		LAZY_BEAKER(/reagent/nitrogen),
-		LAZY_BEAKER(/reagent/silicon),
-		LAZY_BEAKER(/reagent/potassium),
-		LAZY_BEAKER(/reagent/salt/sodium_chloride),
-		LAZY_BEAKER(/reagent/ammonia),
-		LAZY_BEAKER(/reagent/sulfur),
-		LAZY_BEAKER(/reagent/chlorine),
-		LAZY_BEAKER(/reagent/phenol),
-		LAZY_BEAKER(/reagent/sodium),
-		LAZY_BEAKER(/reagent/phosphorous),
-		LAZY_BEAKER(/reagent/fuel/oxygen),
-		LAZY_BEAKER(/reagent/fuel/oil/carbon),
-		LAZY_BEAKER(/reagent/fuel/hydrogen),
-		LAZY_BEAKER(/reagent/fuel/phoron),
-		LAZY_BEAKER(/reagent/fuel/acetone),
-		LAZY_BEAKER(/reagent/nutrition/ethanol),
-		LAZY_BEAKER(/reagent/toxin/mercury)
-	)
-
-#undef LAZY_BEAKER
 
 /obj/structure/interactive/vending/medical/wardrobe
 	name = "medical wardrobe vendor"

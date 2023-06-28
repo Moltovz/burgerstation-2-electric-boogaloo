@@ -9,7 +9,7 @@ var/global/next_announcement = 0
 	icon_state = "captain"
 
 	value = 3000
-	value_burgerbux = 10
+	value_burgerbux = 5
 
 	var/sound_to_play = 'sound/alert/announcement.ogg'
 
@@ -43,6 +43,9 @@ var/global/next_announcement = 0
 
 	var/message = input("What should the message be?", "Message", stored_message) as message | null
 
+	if(src.qdeleting)
+		return FALSE
+
 	INTERACT_CHECK_OTHER(src) //Hacky
 
 	stored_message = message
@@ -59,9 +62,6 @@ var/global/next_announcement = 0
 
 	if(get_turf(caller) != get_turf(src))
 		caller.to_chat(span("warning","You're too far away!"))
-		return FALSE
-
-	if(qdeleting)
 		return FALSE
 
 	if(!sender)
@@ -169,6 +169,9 @@ var/global/next_announcement = 0
 
 	var/message = input("What should the message be?", "Message", stored_message) as message | null
 
+	if(src.qdeleting)
+		return FALSE
+
 	INTERACT_CHECK_OTHER(src) //Hacky
 
 	stored_message = message
@@ -185,9 +188,6 @@ var/global/next_announcement = 0
 
 	if(get_turf(caller) != get_turf(src))
 		caller.to_chat(span("warning","You're too far away!"))
-		return FALSE
-
-	if(qdeleting)
 		return FALSE
 
 	if(!sender)

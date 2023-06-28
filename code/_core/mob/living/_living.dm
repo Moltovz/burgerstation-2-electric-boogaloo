@@ -4,7 +4,7 @@
 	stamina_base = 50
 	mana_base = 50
 
-	sight = SEE_BLACKNESS | SEE_SELF//| SEE_PIXELS
+	sight = SEE_BLACKNESS | SEE_SELF
 
 	enable_chunk_clean = TRUE
 	enable_chunk_handling = TRUE
@@ -158,9 +158,6 @@
 	var/override_butcher = FALSE //Set to true for custom butcher contents.
 	var/list/obj/butcher_contents
 
-	var/next_resist = 0
-	var/resist_counter = 0
-
 	size = SIZE_ANIMAL //Size scale when calculating health as well as collision handling for things like crates and doors. See size.dm for values
 
 	var/max_level = 500 //Max level for attributes of the mob.
@@ -173,8 +170,6 @@
 	var/obj/effect/alert_overlay
 	var/obj/effect/fire_overlay
 	var/obj/effect/shield_overlay
-
-	var/resist_percent = 0
 
 	var/enable_medical_hud = TRUE
 	var/enable_security_hud = TRUE
@@ -250,7 +245,7 @@
 	var/list/traits = list() //Assoc list. This is saved.
 	var/list/traits_by_category = list() //Assoc list. This isn't saved.
 
-	can_be_bumped = FALSE
+	can_be_bumped = FALSE //Only if dead.
 
 	var/delete_on_death = FALSE
 
@@ -289,11 +284,21 @@
 
 	var/next_alert = 0 //Time until this specific mob can create an alert that wakes up AI. Prevents spam and increases preformance.
 
+	var/default_language = LANGUAGE_BASIC //Default language to use for talking.
+
+	var/next_resist = 0 //The next time you're allowed to resist.
+	var/grab_difficulty = 0 //Current difficulty of resisting out of the current grab (if any).
+	var/grab_resist_counter = 0 //Current times resisted in current grab.
+
+	var/was_killed = FALSE //This is set to true if the mob died at least once.
+
+
 /mob/living/PreDestroy()
 
 	UNPROCESS_LIVING(src)
 
-	if(istype(ai)) ai.set_active(FALSE)
+	if(ai && istype(ai))
+		ai.set_active(FALSE)
 
 	QDEL_NULL(ai)
 	QDEL_NULL(stand)
@@ -318,12 +323,6 @@
 
 	QDEL_NULL(flash_overlay)
 
-	. = ..()
-
-/mob/living/Destroy()
-
-	buckled_object = null
-
 	if(minion)
 		minion.master = null
 		minion = null
@@ -341,17 +340,19 @@
 		attributes = null
 		skills = null
 
-	hit_logs?.Cut()
-
 	SSliving.all_living -= src
-
-	if(old_turf && old_turf.old_living)
-		old_turf.old_living -= src
-	old_turf = null
 
 	if(boss)
 		SSbosses.tracked_bosses -= src
 		SSbosses.living_bosses -= src
+
+	. = ..()
+
+/mob/living/Destroy()
+
+	buckled_object = null
+
+	hit_logs?.Cut()
 
 	players_fighting_boss?.Cut()
 
@@ -362,8 +363,11 @@
 
 	stat_elements_to_update?.Cut()
 
-	return ..()
+	. = ..()
 
+	if(old_turf && old_turf.old_living)
+		old_turf.old_living -= src
+	old_turf = null
 
 /*
 /mob/living/proc/try_rot()
@@ -569,6 +573,7 @@
 	//This is initialized somewhere else.
 
 	shield_overlay = new(src)
+	shield_overlay.appearance_flags = RESET_COLOR | RESET_ALPHA
 	shield_overlay.layer = LAYER_EFFECT
 	shield_overlay.icon = 'icons/obj/effects/combat.dmi'
 	shield_overlay.icon_state = "block"
@@ -583,7 +588,7 @@
 	water_mask.icon = 'icons/water_mask.dmi'
 	water_mask.icon_state = "water_mask"
 	water_mask.appearance_flags = src.appearance_flags | RESET_TRANSFORM | RESET_ALPHA
-	water_mask.plane = PLANE_MOB_WATER_MASK
+	water_mask.plane = PLANE_MOVABLE_WATER_MASK
 	water_mask.layer = LAYER_BASE
 	water_mask.pixel_x = -32
 	water_mask.pixel_y = -32
@@ -661,7 +666,7 @@
 	QUEUE_HEALTH_UPDATE(src)
 
 /mob/living/proc/setup_name()
-	name = "[CHECK_NAME(name)] (LVL: [level])"
+	name = "[CHECK_NAME(name)]"
 	return TRUE
 
 /mob/living/proc/set_iff_tag(var/desired_iff_tag,var/force=FALSE)

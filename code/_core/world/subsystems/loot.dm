@@ -1,7 +1,7 @@
 SUBSYSTEM_DEF(loot)
 	name = "Loot Subsystem"
 	desc = "Yes."
-	priority = SS_ORDER_POSTLOAD
+	priority = SS_ORDER_LOOT
 	var/list/all_loot = list()
 	var/list/recursive_loot = list()
 
@@ -70,7 +70,7 @@ SUBSYSTEM_DEF(loot)
 		else
 			L.check_value()
 			//log_subsystem(name,"[k] was set to a value of [L.average_value].")
-		CHECK_TICK_HARD(95)
+		CHECK_TICK(95,FPS_SERVER)
 
 	for(var/k in created_items)
 		var/obj/item/I = created_items[k]

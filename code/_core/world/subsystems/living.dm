@@ -19,6 +19,20 @@ SUBSYSTEM_DEF(living)
 
 	var/next_report = SECONDS_TO_DECISECONDS(300)
 
+/subsystem/living/unclog(var/mob/caller)
+
+	for(var/k in processing_mobs)
+		var/mob/living/L = k
+		processing_mobs -= k
+		if(!L || L.qdeleting)
+			continue
+		if(is_player(L))
+			UNPROCESS_LIVING(L)
+		else
+			qdel(L)
+
+	. = ..()
+
 /subsystem/living/Initialize()
 
 	for(var/k in subtypesof(/dna/))
@@ -30,13 +44,44 @@ SUBSYSTEM_DEF(living)
 		INITIALIZE(L)
 		GENERATE(L)
 		FINALIZE(L)
-		CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+		CHECK_TICK_HARD
 
 	log_subsystem(name,"Initialized [length(all_living)] living beings.")
 
 	for(var/k in subtypesof(/addiction/))
 		var/addiction/A = new k
 		stored_addictions[k] = A
+
+	var/total_spawnpoints = 0
+	for(var/k in src.all_living) //Setup spawnpoints for respawning mobs.
+		var/mob/living/L = k
+		if(!is_turf(L.loc))
+			continue
+		var/turf/T = L.loc
+		var/area/A = T.loc
+
+
+		var/chunk/CH = CHUNK(T)
+
+		if(L.ai)
+			CH.ai += L.ai
+
+		if(A.safe_storage)
+			continue
+
+		if(!L.respawn)
+			continue
+
+		if(!is_simulated(T))
+			log_error("Warning: [T] at ([T.x],[T.y],[T.z]) is not a simulated turf and had a mob spawnpoint on it.")
+			continue
+
+		var/obj/marker/mob_spawn/M = new(T,L)
+		M.set_dir(L.random_spawn_dir ? pick(NORTH,EAST,SOUTH,WEST) : L.dir)
+		CH.spawning_markers += M
+		total_spawnpoints++
+
+	log_subsystem(src.name,"Created [total_spawnpoints] mob spawnpoints.")
 
 	next_report = world.time + initial(next_report)
 
@@ -56,7 +101,7 @@ SUBSYSTEM_DEF(living)
 			L.on_life()
 		if(do_slow)
 			L.on_life_slow()
-		CHECK_TICK_SAFE(tick_usage_max,DECISECONDS_TO_TICKS(1))
+		CHECK_TICK(tick_usage_max,DECISECONDS_TO_TICKS(1))
 
 	if(do_slow)
 		slow_ticks = 0

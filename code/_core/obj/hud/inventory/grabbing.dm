@@ -35,9 +35,11 @@
 		else
 			object.grabbing_hand.release_object(caller)
 
+	if(!object) //Possible race condition?
+		return FALSE
+
 	caller.set_dir(get_dir(caller,object))
 	grabbed_object = object
-	caller.visible_message(span("warning","\The [caller.name] grabs \the [object.name]."),span("notice","You grab \the [object.name]."))
 	grabbed_object.grabbing_hand = src
 	grab_time = world.time //To prevent instant agressive grab
 	overlays.Cut()
@@ -45,13 +47,15 @@
 	if(is_living(grabbed_object))
 		var/mob/living/L = grabbed_object
 		L.handle_transform()
-		L.stat_elements_to_update |= L.stat_elements["resist"]
+		L.resist() //Forces hud update.
 		if(is_living(caller))
 			var/mob/living/LC = caller
 			if(LC.has_status_effect(BUFF))
 				reinforce_grab(caller,force=TRUE)
 
 	HOOK_CALL_ADV("grab_changed",owner,args)
+
+	caller.visible_message(span("warning","\The [caller.name] grabs \the [object.name]."),span("notice","You grab \the [object.name]."))
 
 	return TRUE
 
@@ -91,9 +95,6 @@
 	var/mob/living/L
 	if(is_living(grabbed_object))
 		L = grabbed_object
-		L.next_resist = 0
-		L.resist_counter = 0
-		L.resist_percent = 0
 	grabbed_object.grabbing_hand = null
 	grabbed_object = null
 	grab_level = 1

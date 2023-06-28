@@ -26,10 +26,10 @@
 	verbs += /client/verb/set_fps
 	verbs += /client/verb/edit_macros
 	verbs += /client/verb/set_view_range
-	verbs += /client/verb/toggle_smooth_shadows
 	verbs += /client/verb/toggle_depth
-	verbs += /client/verb/toggle_currency_bloom
 	verbs += /client/verb/change_compact_mode
+	verbs += /client/verb/toggle_debug_messages
+	verbs += /client/verb/toggle_admin_messages
 
 	//Controls
 	verbs += /client/verb/button_release

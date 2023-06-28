@@ -8,7 +8,9 @@ obj/structure/interactive/bed
 	var/pixel_offset_x = 0
 	var/pixel_offset_y = 0
 
-	plane = PLANE_OBJ
+	plane = PLANE_MOVABLE_DEAD
+	layer = LAYER_MOB_BELOW
+
 	var/opened_time = 0
 
 	bullet_block_chance = 50
@@ -19,7 +21,7 @@ obj/structure/interactive/bed
 
 	density = TRUE
 
-/obj/structure/interactive/bed/Crossed(atom/movable/O)
+/obj/structure/interactive/bed/Crossed(atom/movable/O,atom/OldLoc)
 	. = ..()
 	if(src.z && is_living(O))
 		var/mob/living/L = O

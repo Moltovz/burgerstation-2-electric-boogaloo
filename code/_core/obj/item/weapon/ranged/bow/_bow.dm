@@ -125,12 +125,14 @@
 		return FALSE
 
 	var/mob/living/advanced/A = caller
+	var/obj/item/right_item = A.inventories_by_id[BODY_HAND_RIGHT_HELD]?.get_top_object()
+	var/obj/item/left_item = A.inventories_by_id[BODY_HAND_LEFT_HELD]?.get_top_object()
 
 	var/obj/item/I
-	if(A.right_item == src)
-		I = A.left_item
-	else if(A.left_item == src)
-		I = A.right_item
+	if(right_item == src)
+		I = left_item
+	else if(left_item == src)
+		I = right_item
 
 	if(!istype(I,/obj/item/bullet_cartridge/arrow))
 		if(I && caller) caller.to_chat(span("warning","You can't fire \the [I.name] with \the [src.name]!"))
@@ -149,7 +151,7 @@
 	desc_extended = "A classic wooden bow. Overall, it's reliable and has no gimmick."
 	icon = 'icons/obj/item/weapons/ranged/bow/wood.dmi'
 
-	stage_per_decisecond = 10
+	stage_per_decisecond = 4
 	stage_max = 100
 
 	value = 200
@@ -169,8 +171,8 @@
 	desc_extended = "An upgraded bow that is harder to pull back, but is more accurate and fires more of a punch."
 	icon = 'icons/obj/item/weapons/ranged/bow/steel.dmi'
 
-	stage_per_decisecond = 8
-	stage_max = 150
+	stage_per_decisecond = 3
+	stage_max = 125
 
 	value = 300
 
@@ -215,6 +217,15 @@
 	. = ..()
 	if(!.) return stored_arrow
 
+/obj/item/weapon/ranged/bow/hardlight/syndicate
+	name = "syndicate laser bow"
+	icon = 'icons/obj/item/weapons/ranged/bow/laser_bow.dmi'
+	icon_state_count = 3
+	stored_arrow = /obj/item/bullet_cartridge/arrow/hardlight/syndicate
+	ranged_damage_type = /damagetype/ranged/bow/hardlight/syndicate
+	stage_per_decisecond = 8
+	stage_max = 75
+
 /obj/item/weapon/ranged/bow/ashen
 	name = "ashen bow"
 	desc = "So sacred, not even ashwalkers use it."
@@ -227,7 +238,7 @@
 
 	value = 2000
 
-	stage_per_decisecond = 15
+	stage_per_decisecond = 5
 	stage_max = 125
 
 	tier = 4

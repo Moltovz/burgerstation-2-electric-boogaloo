@@ -28,15 +28,17 @@
 
 /obj/item/clothing/head/hat/skimask/pre_equip(var/atom/old_location,var/obj/hud/inventory/new_location)
 
-	. = ..()
-
 	if(new_location.item_slot & SLOT_HEAD)
-		hidden_organs = list(BODY_HAIR_HEAD = TRUE, BODY_HAIR_FACE = FALSE)
+		hidden_organs[BODY_HAIR_HEAD] = TRUE
+		hidden_organs[BODY_HAIR_FACE] = FALSE
 		worn_layer = LAYER_MOB_CLOTHING_HELMET
 
 	if(new_location.item_slot & SLOT_FACE)
-		hidden_organs = list(BODY_HAIR_HEAD = TRUE, BODY_HAIR_FACE = TRUE)
+		hidden_organs[BODY_HAIR_HEAD] = TRUE
+		hidden_organs[BODY_HAIR_FACE] = TRUE
 		worn_layer = LAYER_MOB_CLOTHING_HEADWRAP
+
+	. = ..()
 
 
 /obj/item/clothing/head/hat/skimask/black
@@ -45,3 +47,10 @@
 /obj/item/clothing/head/hat/skimask/medical
 	name = "medical full face mask"
 	color = COLOR_MEDICAL
+
+/obj/item/clothing/head/hat/skimask/tactical
+	icon = 'icons/obj/item/clothing/masks/tacticool.dmi'
+	icon_state = "inventory"
+
+/obj/item/clothing/head/hat/skimask/tactical/black
+	color = COLOR_BLACK

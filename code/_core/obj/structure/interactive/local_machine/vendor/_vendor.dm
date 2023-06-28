@@ -19,7 +19,7 @@ var/global/list/equipped_antags = list()
 	var/list/obj/item/stored_objects = list()
 	var/list/obj/item/stored_types = list()
 	var/list/obj/item/stored_cost = list()
-	var/list/item_multiplier = list() //list of items to multiply the value of by thier assigned value in stored types.
+	var/list/item_multiplier = list() //list of items to multiply the value of by their assigned value in stored types.
 
 	collision_flags = FLAG_COLLISION_WALL
 	collision_bullet_flags = FLAG_COLLISION_BULLET_NONE
@@ -33,8 +33,8 @@ var/global/list/equipped_antags = list()
 
 	bullet_block_chance = 75
 
-	plane = PLANE_OBJ_LARGE
-	layer = LAYER_LARGE_OBJ
+	plane = PLANE_MOVABLE
+	layer = LAYER_OBJ_CRATE
 
 	pixel_y = 8
 
@@ -102,7 +102,7 @@ var/global/list/equipped_antags = list()
 
 	if(icon_state_broken && broken)
 		icon_state = icon_state_broken
-	else if(icon_state_off && !powered && apc_powered)
+	else if(icon_state_off && !powered)
 		icon_state = icon_state_off
 
 
@@ -114,7 +114,7 @@ var/global/list/equipped_antags = list()
 		var/image/I = new/image(initial(icon),icon_state_panel)
 		add_overlay(I)
 
-	if(icon_state_mask && (powered || !apc_powered))
+	if(icon_state_mask && powered)
 		var/image/I = new/image(initial(icon),icon_state_mask)
 		I.plane = PLANE_LIGHTING
 		add_overlay(I)
@@ -127,11 +127,14 @@ var/global/list/equipped_antags = list()
 /obj/structure/interactive/vending/proc/spend_currency(var/mob/living/advanced/player/P,var/amount=0)
 
 	if(accepts_item)
-		if(P.right_item && istype(P.right_item,accepts_item) && P.right_item.amount >= amount)
-			P.right_item.add_item_count(-amount)
-		else if(P.left_item && istype(P.left_item,accepts_item) && P.left_item.amount >= amount)
-			P.left_item.add_item_count(-amount)
-		else
+		var/success = FALSE
+		for(var/k in P.held_objects)
+			var/obj/item/I = k
+			if(I && is_currency(I) && istype(I,accepts_item) && I.amount >= amount)
+				I.add_item_count(-amount)
+				success = TRUE
+				break
+		if(!success)
 			P.to_chat(span("warning","You don't have enough [initial(accepts_item.name)]s to purchase this!"))
 			return FALSE
 		return TRUE
@@ -150,7 +153,7 @@ var/global/list/equipped_antags = list()
 	INTERACT_CHECK
 	INTERACT_DELAY(3)
 
-	if(!powered && apc_powered) //Items can't be purchased if the vendor requires power and its not powered.
+	if(!powered) //Not powered.
 		return null
 
 	if(!spend_currency(caller,item_value))
@@ -158,11 +161,11 @@ var/global/list/equipped_antags = list()
 		return null
 
 	var/obj/item/new_item = new associated_item.type(get_turf(caller))
+	modify_item(new_item,associated_item)
 	INITIALIZE(new_item)
 	GENERATE(new_item)
-	FINALIZE(new_item)
 	new_item.amount = associated_item.amount
-	modify_item(new_item,associated_item)
+	FINALIZE(new_item)
 
 	caller.to_chat(span("notice","You vend \the [new_item.name]."))
 
@@ -194,7 +197,7 @@ var/global/list/equipped_antags = list()
 
 	. = ..()
 
-/obj/structure/interactive/vending/proc/create_item(var/obj/item/item_path,var/turf/turf_spawn) //Create item for the vendor.
+/obj/structure/interactive/vending/proc/create_item(var/obj/item/item_path,var/turf/turf_spawn) //Create item for the vendor (in initialization only).
 	var/obj/item/I = new item_path(turf_spawn)
 	INITIALIZE(I)
 	GENERATE(I)
@@ -260,7 +263,7 @@ var/global/list/equipped_antags = list()
 
 /obj/structure/interactive/vending/clicked_on_by_object(var/mob/caller,var/atom/object,location,control,params)
 
-	if(!is_player(caller) && !is_inventory(object) || !caller.client || (apc_powered && !powered))
+	if(!caller.client || !powered || !is_player(caller) && !is_inventory(object))
 		return ..()
 
 	INTERACT_CHECK

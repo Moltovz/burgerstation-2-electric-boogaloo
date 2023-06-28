@@ -1,12 +1,13 @@
 /obj/structure/interactive/conveyor
 	name = "conveyor belt"
-	desc = "A metal conveyor belt, used to move crates and large objects"
+	desc = "A metal conveyor belt, used to move crates and large objects."
 	icon = 'icons/obj/structure/conveyor_new.dmi'
 	icon_state = "conveyor"
 
 	var/active = TRUE
 	var/reversed = FALSE
 
+	plane = PLANE_MOVABLE_DEAD
 	layer = LAYER_FLOOR_CONVEYOR
 
 	var/turf/start_turf
@@ -55,7 +56,7 @@
 
 
 
-/obj/structure/interactive/conveyor/Crossed(atom/movable/O)
+/obj/structure/interactive/conveyor/Crossed(atom/movable/O,atom/OldLoc)
 
 	if(anchored && active)
 		START_THINKING(src)

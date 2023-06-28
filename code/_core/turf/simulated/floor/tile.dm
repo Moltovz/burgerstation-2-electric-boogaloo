@@ -16,6 +16,10 @@
 
 	map_color = null
 
+	health_base = 400
+
+	wet_floor_icon_state = "tile"
+
 /turf/simulated/floor/tile/chapel/
 	color = COLOR_GREY_DARK
 
@@ -53,6 +57,9 @@
 
 /turf/simulated/floor/tile/red
 	color = COLOR_RED
+
+/turf/simulated/floor/tile/red/dark
+	color = COLOR_RED_DARK
 
 /turf/simulated/floor/tile/blue
 	color = COLOR_BLUE
@@ -105,7 +112,7 @@
 	color = "#B0B5B4"
 
 /turf/simulated/floor/tile/bananium
-	icon_state = "bananium"
+	color = "#FFFF00"
 	desc = "A funny floor"
 	desc_extended = "The floor pattern isn't particularly funny, but makes you laugh anyways"
 

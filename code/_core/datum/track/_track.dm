@@ -186,7 +186,7 @@
 	path = 'sound/music/Boat.ogg'
 	length = 1*60 + 35
 
-/track/chords //Heirophant Boss Music
+/track/chords //Hierophant Boss Music
 	name = "Chords"
 	path = 'sound/music/Chords.ogg'
 	length = 2*60 + 0
@@ -274,7 +274,7 @@
 /track/dead //Boss music
 	name = "Dead"
 	path = 'sound/music/Dead.ogg'
-	length = 3*60 + 10
+	length = 4*60 + 10
 
 /track/grove //Menu music
 	name = "Grove"
@@ -305,3 +305,18 @@
 	name = "It Swoops"
 	path = 'sound/music/It Swoops.ogg'
 	length = 3*60 + 15
+
+/track/frogged //Boss music
+	name = "Frogged"
+	path = 'sound/music/Frogged.ogg'
+	length = 1*60 + 40
+
+/track/herald //Boss music
+	name = "Herald"
+	path = 'sound/music/Herald.ogg'
+	length = 2*60 + 35
+
+/track/canman //Boss music
+	name = "Canman"
+	path = 'sound/music/Canman.ogg'
+	length = 2*60 + 55

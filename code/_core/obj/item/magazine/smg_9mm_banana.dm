@@ -17,7 +17,8 @@
 	weapon_whitelist = list(
 		/obj/item/weapon/ranged/bullet/magazine/smg/tactical = TRUE,
 		/obj/item/weapon/ranged/bullet/magazine/smg/tactical/equipped = TRUE,
-		/obj/item/weapon/ranged/bullet/magazine/smg/tactical/corporate = TRUE
+		/obj/item/weapon/ranged/bullet/magazine/smg/tactical/corporate = TRUE,
+		/obj/item/weapon/ranged/bullet/magazine/smg/handheld = TRUE
 	)
 
 	ammo = /obj/item/bullet_cartridge/pistol_9mm
@@ -29,5 +30,5 @@
 
 
 /obj/item/magazine/smg_9mm/update_icon()
-	icon_state = "[initial(icon_state)]_[length(stored_bullets) ? 1 : 0]"
+	icon_state = "[initial(icon_state)]_[get_ammo_count() ? 1 : 0]"
 	return ..()

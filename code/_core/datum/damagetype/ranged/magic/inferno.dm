@@ -1,10 +1,10 @@
 /damagetype/ranged/magic/inferno
 	attack_damage_base = list(
-		HEAT = 45*0.55,
+		HEAT = 60,
 	)
 
 	attribute_stats = list(
-		ATTRIBUTE_INTELLIGENCE = 45*0.2
+		ATTRIBUTE_INTELLIGENCE = 20
 	)
 
 	attribute_damage = list(
@@ -12,15 +12,11 @@
 	)
 
 	skill_stats = list(
-		SKILL_MAGIC = 45*0.3,
+		SKILL_MAGIC = 20,
 	)
 
 	skill_damage = list(
 		SKILL_MAGIC = HEAT
-	)
-
-	bonus_experience_skill = list(
-		SKILL_MAGIC = 75 //75%
 	)
 
 /damagetype/ranged/magic/inferno/post_on_hit(var/atom/attacker,var/turf/attacker_turf,var/atom/victim,var/turf/victim_turf,var/atom/weapon,var/atom/hit_object,var/total_damage_dealt=0)

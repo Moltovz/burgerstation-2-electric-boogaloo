@@ -72,7 +72,7 @@
 		/obj/item/weapon/ranged/bullet/revolver/big_game,
 
 		//3 smgs or shotguns
-		/obj/item/weapon/ranged/bullet/pump/shotgun/nt,
+		/obj/item/weapon/ranged/bullet/pump/shotgun/tech,
 		/obj/item/weapon/ranged/energy/pump/kinetic_accelerator,
 		/obj/item/weapon/ranged/energy/fed/plasma_cutter,
 
@@ -89,9 +89,9 @@
 		/obj/item/weapon/ranged/bullet/magazine/rifle/sniper_127,
 
 		//3 grenades or equipment
-		/obj/item/grenade/timed/explosive,
-		/obj/item/grenade/landmine/proximity/explosive,
-		/obj/item/grenade/timed/decoy
+		/obj/item/grenade/device/timed/explosive,
+		/obj/item/grenade/device/landmine/proximity/explosive,
+		/obj/item/grenade/device/special/timed/decoy
 
 	)
 
@@ -117,6 +117,7 @@
 		/obj/item/bulletbox/small/shotgun_12,
 		/obj/item/bulletbox/small/shotgun_12/flechette,
 		/obj/item/bulletbox/small/shotgun_12/slug,
+		/obj/item/bulletbox/small/shotgun_12/techshot,
 
 		/obj/item/magazine/rifle_556,
 		/obj/item/magazine/rifle_556/ap,
@@ -146,7 +147,7 @@
 		/obj/item/analyzer/gps,
 		/obj/item/analyzer/gps/advanced,
 		/obj/item/weapon/melee/torch/lantern,
-		/obj/item/storage/bags/mining,
+		/obj/item/ore_bag,
 		/obj/item/storage/bags/blacksmithing,
 		/obj/item/crafting_bench/smelter,
 		/obj/item/weapon/melee/tool/pickaxe,
@@ -154,7 +155,7 @@
 		/obj/item/weapon/melee/tool/screwdriver,
 		/obj/item/weapon/melee/tool/wrench,
 		/obj/item/supply_remote/drill,
-		/obj/item/supply_remote/ammo,
+		/obj/item/supply_remote/ore_box,
 		/obj/item/flare,
 		/obj/item/fulton_pack,
 		/obj/item/container/syringe/medipen/mining,

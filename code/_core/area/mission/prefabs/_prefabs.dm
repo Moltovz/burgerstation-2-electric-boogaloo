@@ -6,10 +6,6 @@
 
 	allow_area_expansion = FALSE
 
-
-
-
-
 /area/mission/prefab/vault
 	name = "\improper Vault"
 	icon_state = "yellow"
@@ -17,7 +13,7 @@
 	link_to_parent_apc = TRUE
 	interior = TRUE
 	trackable = FALSE
-	flags_area = FLAG_AREA_NO_BLOODCRAWL
+	flags_area = FLAG_AREA_NO_TELEPORT
 
 /area/mission/prefab/vault/vault_01
 

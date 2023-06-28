@@ -11,10 +11,9 @@
 	if(assoc_button)
 		assoc_button.update_owner(null)
 		assoc_button = null
-	. = ..()
-
-/obj/hud/button/inventory_defer/Destroy()
-	referencing = null
+	if(referencing)
+		HOOK_REMOVE("update_stats","update_stats_\ref[src]",referencing)
+		referencing = null
 	. = ..()
 
 /obj/hud/button/inventory_defer/proc/get_top_vis_object()

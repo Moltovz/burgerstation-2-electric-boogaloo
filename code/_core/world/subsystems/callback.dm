@@ -2,7 +2,7 @@ SUBSYSTEM_DEF(callback)
 	name = "Callback Subsystem"
 	desc = "Controls callbacks."
 	tick_rate = DECISECONDS_TO_TICKS(1)
-	priority = SS_ORDER_IMPORTANT //Doesn't really matter.
+	priority = SS_ORDER_CALLBACK
 	var/list/all_callbacks = list()
 
 	tick_usage_max = 100
@@ -11,21 +11,16 @@ SUBSYSTEM_DEF(callback)
 /subsystem/callback/unclog(var/mob/caller)
 	for(var/callback_id in src.all_callbacks)
 		all_callbacks -= callback_id
-	broadcast_to_clients(span("danger","Removed all callbacks."))
-	return ..()
+	. = ..()
 
 /subsystem/callback/proc/try_call(var/datum/stored_object,var/stored_proc,var/stored_args)
 	if(stored_object)
-		if(stored_object.qdeleting)
-			log_error("Warning: [stored_object.get_debug_name()] tried being called while qdeleting!")
+		if(is_datum(stored_object) && stored_object.qdeleting)
 			return FALSE
-		var/result = call(stored_object,stored_proc)(arglist(stored_args))
-		if(isnull(result))
-			log_error("Warning: Callback proc [stored_proc] belonging to [stored_object.get_debug_name()] returned null!")
+		call(stored_object,stored_proc)(arglist(stored_args))
 	else
-		var/result = call(stored_proc)(arglist(stored_args))
-		if(isnull(result))
-			log_error("Warning: Callback proc [stored_proc] belonging to GLOBAL returned null!")
+		call(stored_proc)(arglist(stored_args))
+
 	return TRUE
 
 
@@ -33,24 +28,28 @@ SUBSYSTEM_DEF(callback)
 
 	for(var/callback_id in all_callbacks)
 		var/callback_value = all_callbacks[callback_id]
-		if(!length(callback_value))
-			//No callback data, need to remove.
-			log_error("ERROR: [callback_id] had no callback data!")
+		if(!length(callback_value)) //Sometimes we get a race condition.
+			remove_callback(callback_id)
+			continue
+		var/datum/stored_object = callback_value["object"]
+		if(stored_object && is_datum(stored_object) && stored_object.qdeleting) //We don't do !stored_object || stored_object.qdeleting because stored_object could be null intentionally to call a world proc.
 			remove_callback(callback_id)
 			continue
 		if(callback_value["time"] > world.time)
+			//Don't put remove_callback here like I did once lmao
 			continue
+		remove_callback(callback_id) //The list will still exist after this.
 		var/stored_proc = callback_value["proc"]
+		if(!stored_proc)
+			continue
 		var/list/stored_args = callback_value["args"]
-		var/datum/stored_object = callback_value["object"]
-		remove_callback(callback_id)
 		var/result = try_call(stored_object,stored_proc,stored_args)
 		if(isnull(result))
 			if(stored_object)
 				log_error("ERROR: Callback of id [callback_id] belonging to [stored_object] did not complete try_call() correctly, thus it was removed.")
 			else
 				log_error("ERROR: Callback of id [callback_id] belonging to world did not complete try_call() correctly, thus it was removed.")
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 	return TRUE
 

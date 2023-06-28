@@ -43,13 +43,15 @@
 	locked = TRUE
 
 /obj/structure/interactive/door/airlock/on_destruction(var/damage = TRUE)
+
 	if(door_state != DOOR_STATE_BROKEN)
 		set_door_state(null,DOOR_STATE_BROKEN,TRUE)
 		health.restore()
-		. = ..()
-	else
-		. = ..()
-		qdel(src)
+		return ..()
+
+	. = ..()
+
+	qdel(src)
 
 /obj/structure/interactive/door/airlock/trigger(var/mob/caller,var/atom/source,var/signal_freq,var/signal_code)
 
@@ -147,6 +149,8 @@ obj/structure/interactive/door/airlock/close(var/mob/caller,var/lock = FALSE,var
 	. = FALSE
 
 	switch(desired_door_state)
+		if(DOOR_STATE_BROKEN)
+			. = TRUE
 		if(DOOR_STATE_DENY)
 			CALLBACK("door_state_closed_\ref[src]",6,src,src::set_door_state(),caller,DOOR_STATE_CLOSED,should_lock)
 			if(deny_sound)
@@ -309,7 +313,7 @@ obj/structure/interactive/door/airlock/close(var/mob/caller,var/lock = FALSE,var
 		panel.appearance_flags = src.appearance_flags | RESET_COLOR
 		add_overlay(panel)
 
-	if((!apc_powered || powered) && light_state)
+	if(powered && light_state)
 		var/image/light_fixtures = new /image(icon,light_state)
 		light_fixtures.appearance_flags = src.appearance_flags | RESET_COLOR
 		light_fixtures.color = light_color ? light_color : "#FFFFFF"

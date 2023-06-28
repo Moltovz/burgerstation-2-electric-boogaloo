@@ -107,7 +107,7 @@
 
 	color = COLOR_GREEN
 
-	turf_whitelist = /turf/simulated/floor/colored/dirt
+	turf_whitelist = /turf/simulated/floor/grass
 
 //TREES
 /obj/marker/generation/foliage/tree
@@ -121,6 +121,8 @@
 	color = COLOR_GREEN
 
 	turf_whitelist = /turf/simulated/floor/colored
+
+	bypass_disallow_generation = FALSE
 
 
 /obj/marker/generation/foliage/tree/snow

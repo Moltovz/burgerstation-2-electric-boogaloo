@@ -14,6 +14,7 @@ var/global/list/ckeys_being_hunt_by = list() //Assoc list. key is ckey, value is
 	var/atom/objective_move
 	var/should_follow_objective_move = FALSE
 	var/should_astar_objective_move = FALSE
+	var/objective_move_distance = 1 //The follow distance.
 
 	var/mob/living/objective_attack
 
@@ -34,14 +35,14 @@ var/global/list/ckeys_being_hunt_by = list() //Assoc list. key is ckey, value is
 	var/objective_ticks = 0
 
 	//Measured in ticks.
-	var/objective_delay = DECISECONDS_TO_TICKS(10)
+	var/objective_delay = SECONDS_TO_TICKS(4) //Base objective delay. Gets smaller with alertness.
 
 	var/list/target_distribution_x = list(12,16,20)
 	var/list/target_distribution_y = list(4.8,12,16,20,24)
 
 	var/turf/home_turf //Where the mob's home is.
 
-	var/shoot_obstacles = TRUE
+	var/attack_obstacles = TRUE
 
 	var/left_click_chance = 90
 
@@ -56,10 +57,10 @@ var/global/list/ckeys_being_hunt_by = list() //Assoc list. key is ckey, value is
 	var/frustration_attack = 0
 	var/frustration_attack_threshold = SECONDS_TO_TICKS(6) //Above this means they'll try to find a new target. THIS IS MEASURED IN TICKS.
 
-	var/use_frustration = FALSE
 	var/frustration_move = 0
 	var/frustration_move_threshold = 10 //Above this means they'll try to alter their movement. THIS IS MEASURED IN MOVEMENT FAILURES.
 	var/use_astar_on_frustration_move = FALSE
+	var/sidestep_on_frustration_move = FALSE
 
 	var/frustration_node_path = 0
 	var/frustration_node_path_threshold = 10 //Above this means they'll try to find a new node path. THIS IS MEASURED IN MOVEMENT FAILURES.
@@ -69,16 +70,18 @@ var/global/list/ckeys_being_hunt_by = list() //Assoc list. key is ckey, value is
 
 	var/list/attackers = list()
 
-	var/kick_chance = 10
-
 	var/attack_movement_obstructions = TRUE //Should attack ALL obstructions if blocked.
 
 	var/list/astar_path_current = list()
+	var/atom/astar_path_current_object
+	var/astar_path_current_object_sensitivity_max = 4 //Distance from the target to repath. If the distance is more than this, repath the path.
+	var/astar_path_current_object_sensitivity_min = 2 //Distance from the target to not repath. If the distance is less than this, remove the path.
 
 	var/node_path_current_step = 1
 	var/list/obj/marker/map_node/node_path_current = list()
 	var/turf/node_path_start_turf
 	var/turf/node_path_end_turf
+	var/node_path_current_object
 
 	var/turf/last_combat_location //last location where there was an objective_attack
 
@@ -112,7 +115,7 @@ var/global/list/ckeys_being_hunt_by = list() //Assoc list. key is ckey, value is
 	var/aggression = 2 //Thanks elder scrolls.
 	//0 = Does not search for enemies; only attacks when told to (example: getting hit by damage, when retaliate is true).
 	//1 = Attacks enemies in enemy tags.
-	//2 = Attacks people who don't have the same loyalty tag as them, except for AI.
+	//2 = Attacks people who don't have the same loyalty tag as them, except for AI (unless the AI is in combat).
 	//3 = Attacks people who don't have the same loyalty tag as them, including AI.
 	//4 = Attacks literally everyone in sight, including friends if possible.
 	var/assistance = 1
@@ -147,8 +150,6 @@ var/global/list/ckeys_being_hunt_by = list() //Assoc list. key is ckey, value is
 	var/turf/last_hunt_target_turf //Read only. The last turf that the target was on.
 	var/next_node_check_time = 0
 
-	//Dialogue related.
-	var/language_to_use = LANGUAGE_BASIC
 	var/next_talk = 0
 
 	var/knows_about_lockers = FALSE
@@ -207,12 +208,13 @@ var/global/list/ckeys_being_hunt_by = list() //Assoc list. key is ckey, value is
 
 	set_active(FALSE,deleting=TRUE)
 
+	if(owner) owner.ai = null
+	owner = null
+
 	. = ..()
 
 /ai/Destroy()
 
-	if(owner) owner.ai = null
-	owner = null
 	objective_move = null
 	objective_attack = null
 	home_turf = null

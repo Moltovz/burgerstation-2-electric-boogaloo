@@ -6,7 +6,7 @@ SUBSYSTEM_DEF(sound)
 	priority = SS_ORDER_FIRST
 	var/channel_hack = 100
 
-	tick_usage_max = 75
+	tick_usage_max = 90
 
 	var/list/round_end_sounds = list()
 
@@ -14,15 +14,14 @@ SUBSYSTEM_DEF(sound)
 
 	var/list/sound_cache = list()
 
-	preloop = TRUE
-
 /subsystem/sound/unclog(var/mob/caller)
-	for(var/k in src.active_sounds)
+	for(var/k in active_sounds)
 		var/sound/S = k
-		qdel(S)
 		active_sounds -= k
-	broadcast_to_clients(span("danger","Removed all active sounds."))
-	return ..()
+		if(!S || S.qdeleting)
+			continue
+		qdel(S)
+	. = ..()
 
 /subsystem/sound/Initialize()
 	var/found_files = flist(ROUND_END_DIRECTORY)
@@ -48,16 +47,18 @@ SUBSYSTEM_DEF(sound)
 
 	for(var/F in active_sounds)
 		var/sound/S = F
+		if(!S || S.qdeleting)
+			continue
 		if(!process_sound(S))
 			log_error("Warning! Could not properly process an active sound!")
 			active_sounds -= F
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 	return TRUE
 
 /proc/stop_sound(var/sound_path,var/list/mob/hearers)
 	for(var/F in SSsound.active_sounds)
-		CHECK_TICK_SAFE(SSsound.tick_usage_max,FPS_SERVER)
+		CHECK_TICK(SSsound.tick_usage_max,FPS_SERVER)
 		var/sound/S = F
 		if(S.file != sound_path)
 			continue
@@ -106,7 +107,7 @@ proc/play_ambient_sound(var/sound_path,var/list/atom/hearers,var/volume=50,var/p
 
 	for(var/k in hearers)
 		var/mob/M = k
-		CHECK_TICK_SAFE(50,FPS_SERVER*10)
+		CHECK_TICK(50,FPS_SERVER*10)
 		if(M.client)
 			if(M.client.current_ambient_sound == sound_path)
 				continue
@@ -132,7 +133,7 @@ proc/play_random_ambient_sound(var/sound_path,var/list/atom/hearers,var/volume=5
 
 	for(var/k in hearers)
 		var/mob/M = k
-		CHECK_TICK_SAFE(50,FPS_SERVER*10)
+		CHECK_TICK(50,FPS_SERVER*10)
 		if(!M.client)
 			continue
 		created_sound.volume = M.client.settings.loaded_data["volume_ambient"]
@@ -205,7 +206,16 @@ proc/play_music_track(var/music_track_id,var/client/hearer,var/volume=35,var/loo
 	return created_sound
 
 
-/proc/play_sound_target(var/sound_path,var/mob/M,var/range_min=1, var/range_max = SOUND_RANGE, var/volume=50, var/sound_setting = SOUND_SETTING_FX, var/pitch=1, var/loop=0, var/duration=0, var/pan=0, var/channel=SOUND_CHANNEL_FX, var/priority=0, var/echo = 0, var/invisibility_check = 0,var/tracked)
+/proc/play_sound_target(var/sound_path,var/mob/M,var/range_min=SOUND_RANGE*0.25, var/range_max = SOUND_RANGE, var/volume=50, var/sound_setting = SOUND_SETTING_FX, var/pitch=1, var/loop=0, var/duration=0, var/pan=0, var/channel=SOUND_CHANNEL_FX, var/priority=0, var/echo = 0, var/invisibility_check = 0,var/tracked)
+
+	if(!M)
+		CRASH("Error: Tried playing sound '[sound_path]' without a mob target!")
+
+	if(!is_mob(M))
+		if(is_datum(M))
+			CRASH("Error: Tried playing sound '[sound_path]' to [M.get_debug_name()], a non-mob!")
+		else
+			CRASH("Error: Tried playing sound '[sound_path]' to with the mob arg to '[M]'!")
 
 	var/sound/created_sound = setup_sound(sound_path)
 	if(!created_sound || volume <= 0)
@@ -285,7 +295,7 @@ proc/play_music_track(var/music_track_id,var/client/hearer,var/volume=35,var/loo
 	for(var/k in hearers)
 		var/mob/M = k
 
-		CHECK_TICK_SAFE(SSsound.tick_usage_max,FPS_SERVER*2)
+		CHECK_TICK(SSsound.tick_usage_max,FPS_SERVER*2)
 
 		if(invisibility_check && M.see_invisible < invisibility_check) continue
 
@@ -328,6 +338,15 @@ proc/play_music_track(var/music_track_id,var/client/hearer,var/volume=35,var/loo
 	if(volume <= 0 || range_max <= 0)
 		return FALSE
 
+	if(!source_turf)
+		CRASH("Error: Tried playing sound '[sound_path]' without a source_turf target!")
+
+	if(!is_turf(source_turf))
+		if(is_datum(source_turf))
+			CRASH("Error: Tried playing sound '[sound_path]' to [source_turf.get_debug_name()], a non-turf!")
+		else
+			CRASH("Error: Tried playing sound '[sound_path]' to with the source_turf arg to '[source_turf]'!")
+
 	var/sound/created_sound = setup_sound(sound_path)
 	if(!created_sound)
 		return FALSE
@@ -355,7 +374,7 @@ proc/play_music_track(var/music_track_id,var/client/hearer,var/volume=35,var/loo
 
 	for(var/k in hearers)
 
-		CHECK_TICK_SAFE(SSsound.tick_usage_max,FPS_SERVER*2)
+		CHECK_TICK(SSsound.tick_usage_max,FPS_SERVER*2)
 
 		var/mob/M = k
 

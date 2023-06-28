@@ -16,6 +16,7 @@ var/global/list/possible_monsters_to_spawn = list(
 	var/mob/living/monster_to_spawn
 	var/spawn_limit = 5
 	var/list/mob/living/tracked_mobs = list()
+	var/tracked_mobs_length = 0 //Read only.
 
 	var/mob/living/boss_to_spawn
 
@@ -32,13 +33,13 @@ var/global/list/possible_monsters_to_spawn = list(
 	desired_light_range = VIEW_RANGE*0.5
 	desired_light_color = "#C67000"
 
-	plane = PLANE_OBJ_LARGE
+	plane = PLANE_MOVABLE
 
 	mouse_opacity = 1
 
 /obj/structure/interactive/tendril/get_examine_list(var/mob/examiner)
 	. = ..()
-	. += div("notice","\The [src.name] has [max(deaths_until_loot,0)] spawns left...")
+	. += div("notice","\The [src.name] has [max(deaths_until_loot,0)] spawns left, with [length(tracked_mobs_length)] monsters protecting it...")
 
 /obj/structure/interactive/tendril/Destroy()
 	. = ..()
@@ -77,13 +78,13 @@ var/global/list/possible_monsters_to_spawn = list(
 
 	for(var/k in tracked_mobs)
 		var/mob/living/L = k
-		if(L.qdeleting || L.dead)
+		if(!L || L.qdeleting || L.dead)
 			tracked_mobs -= L
 			deaths_until_loot -= 1
 		else if(get_dist(L,src) >= VIEW_RANGE*2)
 			tracked_mobs -= L
 
-	var/tracked_mobs_length = length(tracked_mobs)
+	tracked_mobs_length = length(tracked_mobs)
 
 	if(tracked_mobs_length <= 0 && deaths_until_loot <= 0)
 		alpha = 0
@@ -119,10 +120,12 @@ var/global/list/possible_monsters_to_spawn = list(
 			animate(L,color=initial(L.color),SECONDS_TO_DECISECONDS(1))
 			flick("spawn",src)
 			if(L.ai)
-				L.ai.set_active(TRUE)
-				L.ai.find_new_objectives(AI_TICK,TRUE)
-				L.ai.roaming_distance = VIEW_RANGE*0.5
-				L.ai.allow_far_roaming = FALSE
+				var/chunk/C = CHUNK(T2)
+				if(C && C.visited_by_player)
+					L.ai.set_active(TRUE)
+					L.ai.find_new_objectives(AI_TICK,TRUE)
+					L.ai.roaming_distance = VIEW_RANGE*0.5
+					L.ai.allow_far_roaming = FALSE
 
 
 	CALLBACK("\ref[src]_spawn",SECONDS_TO_DECISECONDS(2+tracked_mobs_length),src,src::spawn_monster())

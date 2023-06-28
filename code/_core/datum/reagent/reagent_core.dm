@@ -33,9 +33,25 @@
 	liquid = -0.75
 
 	heated_reagent = /reagent/ash
+	heated_reagent_temp = 700
+	heated_reagent_amount = 0
+	heated_reagent_mul = 0.01
+
+/reagent/wood
+	name = "Wood"
+	desc = "What most wooden things are made out of."
+	color = "#6B5546"
+	alpha = 255
+
+	flavor = "sawdust"
+
+	liquid = -0.25
+
+	heated_reagent = /reagent/carbon
 	heated_reagent_temp = 600
 	heated_reagent_amount = 0
 	heated_reagent_mul = 0.01
+
 
 /reagent/iron //Found while mining iron ore deposits
 	name = "Iron"
@@ -48,6 +64,8 @@
 	liquid = -0.25
 
 	overdose_threshold = 40
+
+	flags_metabolism = REAGENT_METABOLISM_STOMACH | REAGENT_METABOLISM_BLOOD
 
 /reagent/iron/act_explode(var/reagent_container/container,var/atom/owner,var/atom/source,var/atom/epicenter,var/magnitude,var/desired_loyalty_tag) //What happens when this reagent is hit by an explosive.
 	var/volume_amount = -container.add_reagent(src.type,-container.volume_current,caller = owner) //Can't be bothered to get the exact amount needed to be removed as it is handled in the proc anyways.
@@ -97,7 +115,17 @@
 	color = COLOR_STEEL
 	alpha = 255
 
-	flavor = "steel"
+	flavor = "metal"
+
+	liquid = -0.25
+
+/reagent/plasteel
+	name = "Plasteel"
+	desc = "What most lifeforms build advanced weapons out of."
+	color = COLOR_PLASTEEL
+	alpha = 255
+
+	flavor = "plastic"
 
 	liquid = -0.25
 
@@ -111,6 +139,16 @@
 
 	liquid = -0.25
 
+/reagent/diamond
+	name = "Diamond"
+	desc = "What most lifeforms build high-level currency out of."
+	color = "#D9FFFF"
+	alpha = 255
+
+	flavor = "expenses"
+
+	liquid = -0.25
+
 /reagent/silver
 	name = "Silver"
 	desc = "What most lifeforms build weapons out of."
@@ -120,6 +158,47 @@
 	flavor = "metal"
 
 	liquid = -0.25
+
+/reagent/platinum
+	name = "Platinum"
+	desc = "What most lifeforms build high-level currency out of."
+	color = COLOR_PLATINUM
+	alpha = 255
+
+	flavor = "metal"
+
+	liquid = -0.25
+
+/reagent/gold
+	name = "Gold"
+	desc = "What most lifeforms build high-level currency out of."
+	color = COLOR_GOLD
+	alpha = 255
+
+	flavor = "metal"
+
+	liquid = -0.25
+
+/reagent/brass
+	name = "Brass"
+	desc = "What most lifeforms build pipes out of."
+	color = "#e7a831"
+	alpha = 255
+
+	flavor = "metal"
+
+	liquid = -0.25
+
+/reagent/titanium
+	name = "Titanium"
+	desc = "What most lifeforms build weapons out of."
+	color = COLOR_TITANIUM
+	alpha = 255
+
+	flavor = "metal"
+
+	liquid = -0.25
+
 
 /reagent/aluminium
 	name = "Aluminium"
@@ -175,6 +254,8 @@
 	flavor_strength = 4
 
 	liquid = -0.9
+
+	flags_metabolism = REAGENT_METABOLISM_STOMACH
 
 /reagent/salt/on_metabolize_stomach(var/mob/living/owner,var/reagent_container/container,var/amount_to_metabolize=0,var/starting_volume=0,var/multiplier=1)
 	. = ..()
@@ -256,6 +337,8 @@
 	blood_toxicity_multiplier = -0.5 //A meme, but whatever.
 
 	lethal = TRUE
+
+	flags_metabolism = REAGENT_METABOLISM_STOMACH | REAGENT_METABOLISM_BLOOD | REAGENT_METABOLISM_SKIN
 
 /reagent/space_cleaner/on_metabolize_stomach(var/mob/living/owner,var/reagent_container/container,var/amount_to_metabolize=0,var/starting_volume=0,var/multiplier=1)
 

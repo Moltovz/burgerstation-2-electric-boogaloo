@@ -9,7 +9,7 @@
 
 	var/nutrition_amount = 0 //Per unit
 	var/hydration_amount = 0 //Per unit
-	var/nutrition_quality_amount = 0 //How good of a quality is the nutrition?
+	var/nutrition_quality_amount = 0 //Per unit
 	var/heal_factor = 2 //Per unit.
 
 	value = 1 //Acts as a multiplier.
@@ -28,9 +28,15 @@
 
 	blood_toxicity_multiplier = 0
 
+	flags_metabolism = REAGENT_METABOLISM_STOMACH | REAGENT_METABOLISM_BLOOD | REAGENT_METABOLISM_PLANT
+
+/reagent/nutrition/get_flammability()
+	return max(0,((nutrition_amount+abs(nutrition_quality_amount))/40)*0.1 - (hydration_amount/10)*0.1)
+
+
 /reagent/nutrition/New(var/desired_loc)
 	//Automatically set value.
-	value *= 0.1 + max(0.1,(nutrition_amount-nutrition_quality_amount)*0.035) + max(0,hydration_amount*0.015) + max(0,heal_factor) + max(0,0.05*flavor_strength)
+	value *= 0.1 + max(0.1,(nutrition_amount+nutrition_quality_amount)*0.035) + max(0,hydration_amount*0.015) + max(0,heal_factor) + max(0,0.05*flavor_strength)
 	. = ..()
 	value = CEILING(value,0.01)
 
@@ -62,32 +68,36 @@
 	. = ..()
 
 	if(nutrition_amount)
-		plant.add_nutrition(.*(nutrition_amount/14)*multiplier) //plant food has 14 nutrition, so we want 1u plant food = 1 nutrition point.
+		plant.add_nutrition(.*(nutrition_amount/14)*multiplier*2) //plant food has 14 nutrition, so we want 10u plant food = 20 nutrition point.
 
 	if(hydration_amount)
-		plant.add_hydration(.*(hydration_amount/25)*multiplier) //water has 25 hydration, and we want 1u water = 1 hydration point
+		plant.add_hydration(.*(hydration_amount/25)*multiplier*3) //water has 25 hydration, and we want 10u water = 30 hydration point
 
 /reagent/nutrition/on_metabolize_stomach(var/mob/living/owner,var/reagent_container/container,var/amount_to_metabolize=0,var/starting_volume=0,var/multiplier=1)
 
 	. = ..()
 
 	if(.)
-		if(nutrition_amount)
-			owner.add_nutrition(nutrition_amount*.*multiplier)
-			if(nutrition_quality_amount < 0)
-				owner.add_nutrition_fast(-nutrition_quality_amount*.*multiplier)
-			if(owner.blood_volume < owner.blood_volume_max)
-				owner.blood_volume = clamp(owner.blood_volume + nutrition_amount*.*0.3*multiplier,0,owner.blood_volume_max)
-				QUEUE_HEALTH_UPDATE(owner)
-			if(owner.client)
+		if(nutrition_quality_amount+nutrition_amount != 0)
+			owner.add_nutrition((nutrition_quality_amount+nutrition_amount)*.*multiplier)
+		if(nutrition_quality_amount != 0)
+			owner.add_nutrition_fast(-nutrition_quality_amount*.*multiplier)
+			if(nutrition_quality_amount > 0 && owner.client)
 				if(length(attribute_experience_per_nutrition))
 					for(var/k in attribute_experience_per_nutrition)
-						owner.add_attribute_xp(k,attribute_experience_per_nutrition[k]*nutrition_amount*.*multiplier)
+						owner.add_attribute_xp(k,attribute_experience_per_nutrition[k]*nutrition_quality_amount*.*multiplier)
 				if(length(skill_experience_per_nutrition))
 					for(var/k in skill_experience_per_nutrition)
-						owner.add_skill_xp(k,skill_experience_per_nutrition[k]*nutrition_amount*.*multiplier)
+						owner.add_skill_xp(k,skill_experience_per_nutrition[k]*nutrition_quality_amount*.*multiplier)
 
-		if(hydration_amount)
+
+
+		if(nutrition_amount != 0 && owner.blood_volume < owner.blood_volume_max)
+			owner.blood_volume = clamp(owner.blood_volume + nutrition_amount*.*0.3*multiplier,0,owner.blood_volume_max)
+			QUEUE_HEALTH_UPDATE(owner)
+
+
+		if(hydration_amount != 0)
 			owner.add_hydration(hydration_amount*.*multiplier)
 
 		if(heal_factor && owner && owner.health)
@@ -103,8 +113,8 @@
 			else if(amount_to_heal < 0)
 				owner.tox_regen_buffer += amount_to_heal
 
-		if(owner.health && nutrition_amount + hydration_amount != 0)
-			owner.stamina_regen_buffer += (nutrition_amount + hydration_amount) * . *multiplier
+		if(owner.health && (nutrition_amount + nutrition_quality_amount + hydration_amount) != 0)
+			owner.stamina_regen_buffer += (nutrition_amount + nutrition_quality_amount + hydration_amount) * . *multiplier
 
 /reagent/nutrition/on_metabolize_blood(var/mob/living/owner,var/reagent_container/container,var/amount_to_metabolize=0,var/starting_volume=0,var/multiplier=1)
 

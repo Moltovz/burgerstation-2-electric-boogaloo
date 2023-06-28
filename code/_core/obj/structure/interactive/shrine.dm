@@ -1,3 +1,5 @@
+var/global/list/all_rituals = list()
+
 var/global/list/possible_ritual_spawns = list(
 	/mob/living/advanced/npc/beefman = 20,
 	/mob/living/simple/devil = 15,
@@ -35,6 +37,11 @@ var/global/list/possible_ritual_spawns = list(
 	enable_chunk_handling = TRUE
 	enable_chunk_clean = TRUE
 
+
+/obj/structure/interactive/ritual/New(var/desired_loc)
+	all_rituals += src
+	. = ..()
+
 /obj/structure/interactive/ritual/on_chunk_clean()
 	if(complete)
 		var/turf/T = get_turf(src)
@@ -44,6 +51,7 @@ var/global/list/possible_ritual_spawns = list(
 	return FALSE
 
 /obj/structure/interactive/ritual/PreDestroy()
+	all_rituals -= src
 	end_ritual()
 	. = ..()
 
@@ -108,12 +116,13 @@ var/global/list/possible_ritual_spawns = list(
 /obj/structure/interactive/ritual/proc/start_ritual(var/mob/caller)
 
 	for(var/mob/living/advanced/player/P in range(src,ritual_size))
-		if(P.dead || P.qdeleting)
+		if(!P || P.dead || P.qdeleting)
 			continue
 		tracked_players += P
 		HOOK_ADD("post_death","\ref[src]_post_death",P,src,src::remove_player())
 		HOOK_ADD("Destroy","\ref[src]_destroy",P,src,src::remove_player())
 		HOOK_ADD("post_move","\ref[src]_post_move",P,src,src::check_valid_player_position())
+		CHECK_TICK(50,FPS_SERVER)
 
 	if(!length(tracked_players))
 		log_error("Could not start [src.get_debug_name()], no found players!")

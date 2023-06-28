@@ -10,6 +10,8 @@
 
 	value = 5
 
+	size = SIZE_2
+
 
 /obj/item/container/simple/beaker/bottle/medium/bicaridine
 	name = "bottle of bicaridine"
@@ -136,4 +138,15 @@
 	reagents.add_reagent(/reagent/medicine/stamina_potion,reagents.volume_max*0.2)
 	reagents.add_reagent(/reagent/medicine/health_potion,reagents.volume_max*0.2)
 	reagents.add_reagent(/reagent/medicine/mana_potion,reagents.volume_max*0.2)
+	return ..()
+
+
+/obj/item/container/simple/beaker/bottle/medium/poison
+	name = "syndicate poison mix"
+	rarity = RARITY_RARE
+
+/obj/item/container/simple/beaker/bottle/medium/poison/Generate()
+	reagents.add_reagent(/reagent/toxin/polypnium_toxin,reagents.volume_max*0.5)
+	reagents.add_reagent(/reagent/nutrition/ethanol/absinthe/premium,reagents.volume_max*0.25)
+	reagents.add_reagent(/reagent/drug/lithium,reagents.volume_max*0.25)
 	return ..()

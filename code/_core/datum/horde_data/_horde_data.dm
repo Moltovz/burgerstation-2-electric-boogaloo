@@ -11,7 +11,8 @@
 		"syndicate" = 50,
 		/mob/living/simple/slime/forest = 10,
 		/mob/living/simple/slime/water = 5,
-		"goblin" = 30
+		"goblin" = 30,
+		"wizard" = 20
 
 	)
 
@@ -24,6 +25,9 @@
 			/mob/living/advanced/npc/goblin/mage = 20,
 			/mob/living/advanced/npc/goblin/warrior = 40,
 			/mob/living/advanced/npc/goblin = 80
+		),
+		"wizard" = list(
+			/mob/living/advanced/npc/hostile_wizard = 1
 		)
 	)
 
@@ -100,7 +104,7 @@
 			/mob/living/simple/goliath/ancient = 20
 		),
 		"ashwalker" = list(
-			/mob/living/advanced/npc/ashwalker/assassin = 40,
+			/mob/living/advanced/npc/ashwalker/shaman = 5,
 			/mob/living/advanced/npc/ashwalker/hunter = 20,
 			/mob/living/advanced/npc/ashwalker/warrior = 20
 		)
@@ -145,6 +149,13 @@
 	ignore_gamemode = TRUE
 
 
+/horde_data/soldiers
+
+	horde_weights = list(
+		/mob/living/advanced/npc/space_soldier = 100,
+		/mob/living/advanced/npc/space_soldier/special_operative = 5
+	)
+
 /horde_data/tax
 
 	horde_weights = list(
@@ -153,34 +164,5 @@
 
 	ignore_gamemode = TRUE
 
-/horde_data/zombie
-
-	horde_weights = list(
-		/mob/living/advanced/npc/zombie/normal = 200,
-		/mob/living/advanced/npc/zombie/security = 50,
-		/mob/living/advanced/npc/zombie/worker = 50,
-		/mob/living/advanced/npc/zombie/roided = 10,
-		/mob/living/advanced/npc/zombie/bloated = 20,
-		/mob/living/advanced/npc/zombie/armored = 10,
-		/mob/living/advanced/npc/zombie/clown = 5
-	)
-
-	ignore_gamemode = TRUE
-
-/horde_data/syndicate
-
-	horde_weights = list(
-		/mob/living/advanced/npc/syndicate = 100,
-		/mob/living/simple/silicon/syndieborg = 10
-	)
-
-	ignore_gamemode = TRUE
 
 
-/horde_data/revolutionary
-
-	horde_weights = list(
-		/mob/living/advanced/npc/rev = 100,
-		/mob/living/advanced/npc/rev/elite = 20,
-		/mob/living/simple/bear/armored/revolutionary = 10
-	)

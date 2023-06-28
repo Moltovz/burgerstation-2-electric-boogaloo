@@ -16,13 +16,24 @@
 
 	var/overide_icon = FALSE
 
-	value = 10
+	value = 1
 
 	drop_sound = 'sound/items/drop/bottle.ogg'
 
 	has_quick_function = TRUE
 
-	size = SIZE_2
+	size = SIZE_1
+
+	rarity = RARITY_UNCOMMON
+
+/obj/item/container/simple/beaker/get_base_value()
+	. = ..()
+	. *= 2
+
+/obj/item/container/simple/beaker/can_feed(var/mob/caller,var/mob/living/target)
+	if(!allow_reagent_transfer_from)
+		return FALSE
+	. = ..()
 
 /obj/item/container/simple/beaker/Finalize()
 	. = ..()
@@ -36,14 +47,27 @@
 		I.color = reagents.color
 		add_underlay(I)
 
-
+/obj/item/container/simple/beaker/get_examine_list(var/mob/examiner)
+	. = ..()
+	if(reagents)
+		. += div("notice","This can hold up to [reagents.volume_max]u of reagents.")
 
 /obj/item/container/simple/beaker/water/Generate()
 	reagents.add_reagent(/reagent/nutrition/water,reagents.volume_max)
 	return ..()
 
+/obj/item/container/simple/beaker/potassium
+	name = "beaker of potassium"
+
 /obj/item/container/simple/beaker/potassium/Generate()
 	reagents.add_reagent(/reagent/potassium,reagents.volume_max)
+	return ..()
+
+/obj/item/container/simple/beaker/phosphorous
+	name = "beaker of phosphorous"
+
+/obj/item/container/simple/beaker/phosphorous/Generate()
+	reagents.add_reagent(/reagent/phosphorous,reagents.volume_max)
 	return ..()
 
 /obj/item/container/simple/beaker/tnt/Generate()
@@ -100,3 +124,4 @@
 	if(reagent && reagent_amount > 0)
 		var/reagent/R = REAGENT(src.reagent)
 		name = "[initial(name)] ([R.name] [reagent_amount]u)"
+		reagents.add_reagent(src.reagent,reagent_amount)

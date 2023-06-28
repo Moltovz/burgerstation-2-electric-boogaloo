@@ -7,9 +7,9 @@
 	stored_types = list(
 		/obj/item/paper/book/enchanting_guide,
 		/obj/item/paper/book/enchanting/soul_trap,
-		/obj/item/spellswap/negate,
 		/obj/item/enchanting_chalk,
-		/obj/item/soulgem/common
+		/obj/item/soulgem/common,
+		/obj/item/weapon/melee/sword/cult_dagger
 	)
 
 	accepts_item = /obj/item/currency/gold_coin
@@ -45,7 +45,6 @@
 
 		/obj/item/supportgem/cost,
 		/obj/item/supportgem/damage,
-		/obj/item/supportgem/projectiles,
 		/obj/item/supportgem/spread,
 		/obj/item/supportgem/overkill,
 		/obj/item/supportgem/speed,

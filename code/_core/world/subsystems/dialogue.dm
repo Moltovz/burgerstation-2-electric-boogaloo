@@ -13,14 +13,14 @@ SUBSYSTEM_DEF(dialogue)
 
 	log_subsystem(name,"Initialized [length(all_dialogue)] sets of regular dialogue.")
 
-
 	for(var/A in subtypesof(/combat_dialogue/))
 		var/combat_dialogue/CD = A
 		if(!initial(CD.folderpath))
 			continue
 		CD = new A
+		if(!src.setup_combat_dialogue(CD))
+			continue
 		all_combat_dialogue[CD.type] = CD
-		src.setup_combat_dialogue(CD)
 
 	log_subsystem(name,"Initialized [length(all_combat_dialogue)] sets of combat dialogue.")
 
@@ -42,11 +42,10 @@ SUBSYSTEM_DEF(dialogue)
 	for(var/k in files)
 		if(!has_suffix(k,".txt"))
 			continue
-		var/file_data = file2text("[CD.folderpath]/[k]")
+		var/file_data = rustg_file_read("[CD.folderpath]/[k]")
 		if(!file_data)
 			continue
-		var/file_name = get_filename(k)
-		file_name = replacetext(file_name,".txt","")
+		var/file_name = replacetext(k,".txt","")
 		var/list/file_data_list = splittext(file_data,"\n")
 		CD.dialogue_data[file_name] = list()
 		categories_of_dialogue++
@@ -58,6 +57,7 @@ SUBSYSTEM_DEF(dialogue)
 
 	log_subsystem(src.name,"Initialized and found [categories_of_dialogue] categories of dialogue with [lines_of_dialogue] total lines for [CD.type].")
 
+	return TRUE
 
 /subsystem/dialogue/proc/get_combat_dialogue(var/combat_dialogue/cd_id,var/desired_category,var/swear_chance=25)
 
@@ -66,18 +66,36 @@ SUBSYSTEM_DEF(dialogue)
 
 	var/combat_dialogue/CD = src.all_combat_dialogue[cd_id]
 	if(!CD)
-		log_error("Error: Could not find valid combat dialogue id [cd_id]!")
 		return FALSE
 
 	if(!CD.dialogue_data[desired_category])
 		return FALSE
 
+	var/dialogue_to_use
+
+	if(CD.used_dialogue && CD.used_dialogue[desired_category])
+		var/list/usable_dialogue = CD.dialogue_data[desired_category].Copy()
+		usable_dialogue -= CD.used_dialogue[desired_category]
+		if(!length(usable_dialogue)) //Empty!
+			CD.used_dialogue[desired_category] = list()
+			usable_dialogue = CD.dialogue_data[desired_category]
+		dialogue_to_use = pick(usable_dialogue)
+		CD.used_dialogue[desired_category] += dialogue_to_use
+	else
+		if(!CD.used_dialogue)
+			CD.used_dialogue = list()
+		dialogue_to_use = pick(CD.dialogue_data[desired_category])
+		CD.used_dialogue[desired_category] = list(dialogue_to_use)
+
+
 	if(prob(swear_chance))
 		. = "[pick(CD.dialogue_data["swearing"])]"
 		if(swear_chance >= 50)
-			. += "! [capitalize(pick(CD.dialogue_data[desired_category]))]"
+			. += "! [capitalize(dialogue_to_use)]"
 		else
-			. += ", [pick(CD.dialogue_data[desired_category])]"
+			. += ", [pick(dialogue_to_use)]"
+	else
+		. = pick(dialogue_to_use)
 
 	if(swear_chance >= 90)
 		. = uppertext(.)

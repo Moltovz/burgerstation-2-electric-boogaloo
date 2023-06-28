@@ -3,6 +3,8 @@
 
 	overlay_icon_state = "bauble"
 
+	value = 1
+
 /obj/item/experience_scroll/attribute/get_base_value()
 	if(!attribute)
 		return 0
@@ -88,6 +90,7 @@
 
 	overlay_color = COLOR_GREEN
 
+/*
 /obj/item/experience_scroll/attribute/lesser
 	name = "atrribute manual"
 	desc = "Knowledge in the palms of your hands."
@@ -145,3 +148,4 @@
 /obj/item/experience_scroll/attribute/lesser/endurance
 	name = "fitness manual"
 	attribute = ATTRIBUTE_ENDURANCE
+*/

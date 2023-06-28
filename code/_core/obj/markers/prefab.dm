@@ -14,6 +14,11 @@
 
 	var/rotational_offset = 0 //For when the prefab gets rotated by dmm_suite.
 
+	var/chosen_file //For debug only.
+	var/chosen_file_above //For debug only.
+	var/chosen_file_below //For debug only.
+
+
 /obj/marker/prefab/on_dmm_suite_rotate(var/angle_offset=0)
 	. = ..()
 	switch(angle_offset)
@@ -40,7 +45,7 @@
 
 	if(!qdeleting) SSdmm_suite.prefab_markers += src
 
-/obj/marker/prefab/Destroy()
+/obj/marker/prefab/PreDestroy()
 	SSdmm_suite.prefab_markers -= src
 	. = ..()
 
@@ -77,6 +82,14 @@
 	category = "shuttle"
 	chance_none = 0
 	rotational_offset = 16
+
+
+/obj/marker/prefab/shuttle_mini
+	icon = 'icons/obj/markers/prefab_minishuttle.dmi'
+	icon_state = null
+	category = "shuttle_mini"
+	chance_none = 0
+	rotational_offset = 9
 
 //Special Prefabs
 
@@ -225,6 +238,12 @@
 	category = "sol_base"
 	unique = TRUE
 
+/obj/marker/prefab/city/city_hall
+	icon = 'icons/obj/markers/prefab_64x64_city_offset.dmi' //Shitty solution but it works.
+	icon_state = null
+	category = "city_special"
+	unique = TRUE
+
 /obj/marker/prefab/city/t_junction
 	icon = 'icons/obj/markers/prefab_64x64_city_intersection.dmi'
 	icon_state = "t"
@@ -268,15 +287,6 @@
 		category = "city_parking_straight"
 
 	. = ..()
-
-
-/obj/marker/prefab/city_special
-	name = "special city prefab"
-	icon = 'icons/obj/markers/prefab_64x64_city_special.dmi'
-	category = "city_special"
-	unique = TRUE
-	chance_none = 0
-	rotational_offset = 64
 
 
 /obj/marker/prefab/fob

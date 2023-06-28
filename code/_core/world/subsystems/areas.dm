@@ -19,6 +19,11 @@ SUBSYSTEM_DEF(area)
 
 	var/list/areas_by_identifier = list()
 
+/subsystem/area/unclog(var/mob/caller)
+	src.tick_rate = 0
+	log_subsystem(src.name,"Shutting down.")
+	. = ..()
+
 /subsystem/area/Initialize()
 
 	var/area/null_area
@@ -30,14 +35,14 @@ SUBSYSTEM_DEF(area)
 		INITIALIZE(A)
 		if(A.type == /area/)
 			null_area = A
-		CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+		CHECK_TICK_HARD
 
 	log_subsystem(name,"Generating areas...")
 
 	for(var/k in all_areas)
 		var/area/A = all_areas[k]
 		GENERATE(A)
-		CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+		CHECK_TICK_HARD
 
 	log_subsystem(name,"Finalizing areas...")
 
@@ -46,7 +51,7 @@ SUBSYSTEM_DEF(area)
 		var/area/A = all_areas[k]
 		FINALIZE(A)
 		area_count++
-		CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+		CHECK_TICK_HARD
 
 	log_subsystem(name,"Finalized [area_count] total areas.")
 
@@ -69,7 +74,7 @@ SUBSYSTEM_DEF(area)
 					changed_areas++
 					found_turf = TRUE
 					break
-			CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+			CHECK_TICK_HARD
 		if(!found_turf)
 			break
 
@@ -90,7 +95,7 @@ SUBSYSTEM_DEF(area)
 					changed_areas++
 					found_turf = TRUE
 					break
-			CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+			CHECK_TICK_HARD
 		if(!found_turf)
 			break
 
@@ -133,22 +138,29 @@ SUBSYSTEM_DEF(area)
 
 	for(var/k in areas_ambient)
 		var/area/A = k
-		CHECK_TICK_SAFE(tick_usage_max,0)
+		if(!A)
+			areas_ambient -= k
+			continue
+		CHECK_TICK(tick_usage_max,0)
 		var/sound_to_play = pick(A.random_sounds)
 		var/list/valid_players = list()
 		for(var/mob/living/advanced/player/P in A.contents)
 			if(!P.client || P.dead)
 				continue
 			valid_players += P
-		if(length(valid_players))
-			play_random_ambient_sound(sound_to_play,valid_players)
+		if(!length(valid_players))
+			continue
+		play_random_ambient_sound(sound_to_play,valid_players)
 
 	return TRUE
 
 /subsystem/area/proc/set_weather(var/weather_type,var/enabled=FALSE,var/list/area/affected_areas)
 	for(var/k in affected_areas)
 		var/area/A = k
-		CHECK_TICK_SAFE(tick_usage_max,0)
+		if(!A)
+			affected_areas -= k
+			continue
+		CHECK_TICK(tick_usage_max,0)
 		if(enabled)
 			A.icon = 'icons/area/weather.dmi'
 			A.icon_state = weather_type

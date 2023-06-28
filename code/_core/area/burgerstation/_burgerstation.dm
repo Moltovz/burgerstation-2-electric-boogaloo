@@ -197,7 +197,7 @@
 	map_color = COLOR_MEDICAL
 
 /area/burgerstation/science
-	name = "\improper Science"
+	name = "\improper Mining Science"
 	icon_state = "science"
 	flags_area = FLAG_AREA_NO_TELEPORT | FLAG_AREA_NO_CONSTRUCTION | FLAG_AREA_NO_EVENTS
 
@@ -232,6 +232,16 @@
 	map_color = COLOR_YELLOW
 
 	sound_environment = ENVIRONMENT_STONEROOM
+
+/area/burgerstation/arrivals/north
+	name = "\improper North Arrivals Dock"
+	map_color = COLOR_YELLOW
+	color = COLOR_YELLOW
+
+/area/burgerstation/arrivals/south
+	name = "\improper South Arrivals Dock"
+	map_color = COLOR_ORANGE
+	color = COLOR_RED
 
 /area/burgerstation/chapel
 	name = "\improper Chapel"
@@ -360,6 +370,16 @@
 	icon_state = "mining"
 
 	map_color = COLOR_BROWN
+
+/area/burgerstation/mining/lobby
+	name = "\improper Mining Lobby"
+	icon_state = "lobby"
+
+/area/burgerstation/mining/foreman
+	name = "\improper Mining Foreman's Office"
+	icon_state = "cmd"
+
+	map_color = COLOR_COMMAND
 
 /area/burgerstation/tax
 	name = "\improper Tax Room"

@@ -16,7 +16,9 @@ SUBSYSTEM_DEF(logging)
 	var/list/buffered_log_debug = list()
 	var/list/buffered_log_subsystem = list()
 
-	preloop = TRUE
+//Logging shouldn't be unclogged.
+/subsystem/logging/unclog(var/mob/caller)
+	. = ..()
 
 /subsystem/logging/Initialize()
 	if(fexists(ROUND_ID_DIR))
@@ -53,15 +55,23 @@ SUBSYSTEM_DEF(logging)
 	if(world.port != 0 && identifier_to_rank[identifier])
 		for(var/k in all_clients)
 			var/client/C = all_clients[k]
-			if(C.permissions & identifier_to_rank[identifier])
-				C.queued_chat_messages.Add(
+			if(!(C.permissions & identifier_to_rank[identifier]))
+				continue
+			if(C.settings)
+				if(identifier == "admin")
+					if(!C.settings.loaded_data["show_admin_messages"])
+						continue
+				else
+					if(!C.settings.loaded_data["show_debug_messages"])
+						continue
+			C.queued_chat_messages.Add(
+				list(
 					list(
-						list(
-							"text" = span(identifier,log_string),
-							"output_target_list" = list("chat_all.output")
-						)
+						"text" = span(identifier,log_string),
+						"output_target_list" = (identifier_to_rank[identifier] & FLAG_PERMISSION_DEVELOPER) ? list("chat_debug.output") : list("chat_all.output")
 					)
 				)
+			)
 
 	desired_list.Cut()
 

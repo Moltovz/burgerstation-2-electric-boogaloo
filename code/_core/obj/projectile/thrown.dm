@@ -15,7 +15,9 @@
 
 	plane = PLANE_PROJECTILE_NO_EFFECTS
 
-	ricochets_left =  0 //Uses custom system.
+	ricochets_left =  0 //Uses custom system.\
+
+	var/ignore_shuttles = FALSE
 
 /obj/projectile/thrown/Initialize()
 
@@ -26,7 +28,10 @@
 	pixel_z = steps_allowed
 
 
-/obj/projectile/thrown/on_enter_tile(previous_loc,current_loc)
+/obj/projectile/thrown/on_enter_tile(var/turf/old_loc,var/turf/new_loc)
+
+	if(new_loc && ignore_shuttles && new_loc.plane != PLANE_SHUTTLE) //Feels like shitcode, but it works.
+		return TRUE
 
 	. = ..()
 
@@ -66,10 +71,10 @@
 					. = FALSE
 					if(impact_face_x)
 						vel_x *= -1
-						pixel_x_float_physical = (hit_atom.x - src.x)*TILE_SIZE + impact_face_x*TILE_SIZE*0.25
+						//pixel_x_float_physical = (hit_atom.x - src.x)*TILE_SIZE + impact_face_x*TILE_SIZE*0.25
 					if(impact_face_y)
 						vel_y *= -1
-						pixel_y_float_physical = (hit_atom.y - src.y)*TILE_SIZE + impact_face_y*TILE_SIZE*0.25
+						//pixel_y_float_physical = (hit_atom.y - src.y)*TILE_SIZE + impact_face_y*TILE_SIZE*0.25
 					vel_x *= velocity_mod
 					vel_y *= velocity_mod
 					steps_allowed *= velocity_mod
@@ -81,7 +86,7 @@
 			A.Move(new_loc)
 			A.on_thrown(owner,hit_atom)
 			animate_hit(A)
-			CHECK_TICK_SAFE(75,FPS_SERVER)
+			CHECK_TICK(75,FPS_SERVER)
 
 
 
@@ -91,7 +96,7 @@
 /obj/projectile/thrown/PreDestroy()
 
 	for(var/k in src.contents)
-		CHECK_TICK_SAFE(75,FPS_SERVER)
+		CHECK_TICK(75,FPS_SERVER)
 		var/atom/movable/A = k
 		if(previous_loc)
 			A.force_move(previous_loc)

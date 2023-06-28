@@ -16,11 +16,6 @@
 
 	pre_death()
 
-	if(!silent)
-		src.to_chat(span("danger","<h1>You died!</h1>"))
-		src.to_chat(span("danger","Your death is not the end. Someone may come along and revive you, or you can be cloned again by ghosting and loading your current character."))
-		src.to_chat(span("danger","Be warned, if you choose to be cloned or you cannot be revived, you will lose all your items until they are retrieved again!."))
-
 	dead = TRUE
 	time_of_death = world.time
 
@@ -44,7 +39,7 @@
 		if(!silent) create_alert(VIEW_RANGE*0.5,T, alert_level = ALERT_LEVEL_CAUTION, visual = TRUE)
 
 		if(boss && !drops_gold)
-			drops_gold = RAND_PRECISE(0.5,1.25) * level * (1/SSeconomy.credits_per_gold) * 5
+			drops_gold = RAND_PRECISE(0.5,1.25) * level * (1/SSeconomy.credits_per_gold) * 10
 
 		if(drops_gold > 0)
 			create_gold_drop(T,CEILING(drops_gold,1))
@@ -68,12 +63,9 @@
 		var/obj/hud/button/dead_ghost/DG = new
 		DG.update_owner(src)
 
-	if(ckey_last)
-		notify_ghosts("[src.name] has died!",T)
-
 	if(master)
 		dust()
-	else if(!is_player_controlled() && soul_size && has_status_effect(SOULTRAP))
+	else if(soul_size && has_status_effect(SOULTRAP) && !is_player_controlled())
 		var/obj/effect/temp/soul/S = new(T,SECONDS_TO_DECISECONDS(20))
 		S.appearance = src.appearance
 		S.transform = get_base_transform()
@@ -90,6 +82,11 @@
 	update_eyes()
 
 	handle_transform()
+
+	if(!silent && !qdeleting && client)
+		client.to_chat(span("danger","<h1>You died!</h1>"))
+		client.to_chat(span("danger","Your death is not the end. Someone may come along and revive you, or you can be cloned again by ghosting and loading your current character."))
+		client.to_chat(span("danger","Be warned, if you choose to be cloned or you suffer from brain death, you will need to retrieve your items!."))
 
 	return TRUE
 
@@ -118,13 +115,20 @@
 */
 
 /mob/living/proc/revive()
+	if(!dead)
+		return FALSE
 	CALLBACK_REMOVE("\ref[src]_make_unrevivable")
 	hit_logs = list() //Clear logs.
 	movement_flags = 0x0
 	attack_flags = 0x0
 	dead = FALSE
 	remove_status_effect(CRIT)
-	if(ai) ai.set_active(TRUE)
+	if(ai)
+		var/turf/T = get_turf(src)
+		if(T)
+			var/chunk/C = CHUNK(T)
+			if(C && C.visited_by_player)
+				ai.set_active(TRUE)
 	for(var/obj/hud/button/dead_ghost/DG in buttons)
 		DG.update_owner(null)
 	handle_transform()
@@ -188,39 +192,60 @@
 			else if(attack_log["critical"])
 				people_who_contributed[attack_log["attacker"]] += 1
 		if(!length(people_who_killed))
+			//Fallback.
 			people_who_killed = people_who_contributed
+
+		on_killed(people_who_killed) //people_who_killed can be empty.
+
 		if(length(people_who_killed))
-			on_killed(people_who_killed)
+			if(!boss)
+				if(!was_killed && !master && soul_size && !delete_on_death && health && health.health_max >= 100)
+					for(var/k in people_who_killed)
+						var/mob/living/advanced/player/P = k
+						if(!is_player(P) || !P.job)
+							continue
+						if(P.loyalty_tag == src.loyalty_tag)
+							continue
+						var/job/J = JOB(P.job)
+						if(!J || !(J.job_flags & FLAG_JOB_KILLING))
+							continue
+						var/income_multiplier = J.active_income_multiplier + J.active_income_multiplier_bonus*P.job_rank
+						if(income_multiplier >= 0)
+							var/credits_to_give = min(CEILING(health.health_max*0.1,5),300)*income_multiplier
+							var/credits_given = P.adjust_currency(credits_to_give,silent=TRUE)
+							if(credits_given > 0)
+								P.to_chat(span("notice","You gained [credits_given] credits for killing [src.name]."),CHAT_TYPE_COMBAT)
+			else
+				var/rarity = 0
+				var/rarity_count = 0
+				var/list/valid_ckeys = list()
+				for(var/k in people_who_killed)
+					var/mob/living/advanced/player/P = k
+					if(!is_player(P))
+						continue
+					rarity += P.get_rarity()
+					rarity_count++
+					if(P.ckey_last)
+						valid_ckeys += P.ckey_last
+					INCREASE_ACHIEVEMENT(P,"bosses_killed",1)
+				if(T)
+					if(length(valid_ckeys))
+						create_gold_drop(T,CEILING(src.health.health_max/10,1),valid_ckeys)
+					if(rarity_count > 0)
+						rarity *= 1/rarity_count
+						var/list/loot_spawned = SPAWN_LOOT(/loot/boss,T,rarity)
+						for(var/k in loot_spawned)
+							var/obj/item/I = k
+							var/item_move_dir = pick(DIRECTIONS_ALL)
+							var/turf/turf_to_move_to = get_step(T,item_move_dir)
+							if(!turf_to_move_to)
+								turf_to_move_to = T
+							I.force_move(turf_to_move_to)
+							var/list/pixel_offsets = direction_to_pixel_offset(item_move_dir)
+							I.pixel_x = -pixel_offsets[1]*TILE_SIZE
+							I.pixel_y = -pixel_offsets[2]*TILE_SIZE
+							animate(I,pixel_x=rand(-8,8),pixel_y=rand(-8,8),time=5)
 
-		if(boss && T && length(people_who_killed))
-
-			var/rarity = 0
-			var/rarity_count = 0
-			var/list/valid_ckeys = list()
-			for(var/mob/living/advanced/player/P in people_who_killed)
-				rarity += P.get_rarity()
-				rarity_count++
-				if(P.ckey_last)
-					valid_ckeys += P.ckey_last
-				INCREASE_ACHIEVEMENT(P,"bosses_killed",1)
-
-			if(length(valid_ckeys))
-				create_gold_drop(T,CEILING(src.health.health_max/10,1),valid_ckeys)
-
-			if(rarity_count > 0)
-				rarity *= 1/rarity_count
-				var/list/loot_spawned = SPAWN_LOOT(/loot/boss,T,rarity)
-				for(var/k in loot_spawned)
-					var/obj/item/I = k
-					var/item_move_dir = pick(DIRECTIONS_ALL)
-					var/turf/turf_to_move_to = get_step(T,item_move_dir)
-					if(!turf_to_move_to)
-						turf_to_move_to = T
-					I.force_move(turf_to_move_to)
-					var/list/pixel_offsets = direction_to_pixel_offset(item_move_dir)
-					I.pixel_x = -pixel_offsets[1]*TILE_SIZE
-					I.pixel_y = -pixel_offsets[2]*TILE_SIZE
-					animate(I,pixel_x=rand(-8,8),pixel_y=rand(-8,8),time=5)
 
 	HOOK_CALL("post_death")
 
@@ -231,6 +256,8 @@
 
 	if(delete_on_death)
 		qdel(src)
+
+	was_killed = TRUE
 
 	return TRUE
 
@@ -349,7 +376,7 @@ mob/living/proc/on_life_slow()
 
 	if(blood_type && blood_volume_max > 0)
 		if(blood_volume < blood_volume_max)
-			var/blood_volume_to_add = -(add_hydration(-0.05) + add_nutrition(-0.3))*0.5
+			var/blood_volume_to_add = -(add_hydration(-0.15) + add_nutrition(-1.2))*0.125
 			blood_volume = clamp(blood_volume + blood_volume_to_add,0,blood_volume_max)
 			QUEUE_HEALTH_UPDATE(src)
 		else if(blood_volume > blood_volume_max)

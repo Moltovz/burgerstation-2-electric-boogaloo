@@ -24,43 +24,91 @@
 
 	gamemode_horde_data = /horde_data/syndicate
 
+	var/mob/living/interior_corpse_type
+	var/mob/living/exterior_corpse_type
+
 /gamemode/mission/New()
+	var/local_benchmark = true_time()
+	log_debug("Spawning missions mobs...")
 	. = ..()
-	round_time_next = 30
 	spawn_and_set_enemies()
+	round_time_next = 30
+	var/benchmark_time = DECISECONDS_TO_SECONDS((true_time() - local_benchmark))
+	log_debug("Mission mobs took <b>[benchmark_time]</b> seconds to spawn.")
 
 /gamemode/mission/proc/spawn_and_set_enemies()
+
+	set background = TRUE
 
 	if(!gamemode_horde_data)
 		return FALSE
 
 	var/horde_data/HD = SShorde.all_horde_data_types[gamemode_horde_data]
 
-	var/amount_created = 0
+	var/list/area_to_mob_type_whitelist = list()
 
+	var/mission_mobs_created = 0
 	for(var/k in mission_mob_markers)
-
 		var/obj/marker/M = k
 		if(!M.loc)
 			qdel(M)
-			CHECK_TICK_SAFE(25,FPS_SERVER*10)
+			CHECK_TICK(50,FPS_SERVER*10)
 			continue
+		var/turf/T = M.loc
+		var/area/A = T.loc
 
-		var/chosen_data = pickweight(HD.horde_weights)
+		var/chosen_data
+		if(area_to_mob_type_whitelist[A.type])
+			chosen_data = area_to_mob_type_whitelist[A.type]
+		else if(area_to_mob_type_whitelist[A.parent_type])
+			chosen_data = area_to_mob_type_whitelist[A.parent_type]
+		else
+			chosen_data = pickweight(HD.horde_weights)
+			area_to_mob_type_whitelist[A.type] = chosen_data
+
 		if(istext(chosen_data))
-			chosen_data = HD.horde_squads[chosen_data]
+			chosen_data = pick(HD.horde_squads[chosen_data])
 
-		var/mob/living/L = new chosen_data(M.loc)
+		var/mob/living/L = new chosen_data(T)
 		L.dir = pick(DIRECTIONS_CARDINAL)
 		INITIALIZE(L)
 		GENERATE(L)
 		FINALIZE(L)
-		amount_created += 1
+		mission_mobs_created++
 		qdel(M)
-		CHECK_TICK_SAFE(90,FPS_SERVER*10)
+		CHECK_TICK(50,FPS_SERVER*10)
 
+	log_debug("Created [mission_mobs_created] mission mobs.")
 
-	log_debug("Created [amount_created] mission mobs.")
+	var/corpses_created = 0
+	if(interior_corpse_type || exterior_corpse_type)
+		for(var/k in corpse_markers)
+			var/obj/marker/M = k
+			if(!M.loc || !is_turf(M.loc))
+				qdel(M)
+				CHECK_TICK(50,FPS_SERVER*10)
+				continue
+			var/turf/T = M.loc
+			var/area/A = T.loc
+			var/mob/living/advanced/L
+			if(A.interior && interior_corpse_type)
+				L = new interior_corpse_type(T)
+			else
+				L = new exterior_corpse_type(T)
+			INITIALIZE(L)
+			GENERATE(L)
+			FINALIZE(L)
+			if(!L.has_status_effect(ZOMBIE))
+				L.death(silent=TRUE)
+				L.enable_chunk_clean = FALSE
+				L.make_convincing_corpse()
+			L.set_dir(pick(NORTH,EAST,SOUTH,WEST))
+			corpses_created++
+			qdel(M)
+			CHECK_TICK(50,FPS_SERVER*10)
+
+	log_debug("Created [corpses_created] mission mobs.")
+
 
 
 
@@ -76,9 +124,9 @@
 	add_objective(/objective/hostage)
 	add_objective(/objective/hostage)
 	add_objective(/objective/kill_boss)
-	add_objective(/objective/kill_rogue)
 
 	if(player_count >= 10)
+		add_objective(/objective/kill_rogue)
 		add_objective(/objective/hostage)
 		log_debug("Adding player count 10 objectives.")
 
@@ -109,6 +157,10 @@
 
 	return ..()
 
+/gamemode/mission/proc/announce_lore()
+
+	return TRUE
+
 /gamemode/mission/on_life()
 
 	. = ..()
@@ -126,6 +178,7 @@
 					"All landfall crew are ordered to gear up for planetside combat. Estimated time until shuttle functionality: 6 minutes.",
 					sound_to_play = 'sound/voice/announcement/landfall_crew_6_minutes_shuttle.ogg'
 				)
+				CALLBACK("\ref[src]_announce_lore",rand(100,600),src,src::announce_lore()) //10 to 60 seconds.
 			if(2)
 				status_display_text = "PREP"
 				round_time_next = 1*60
@@ -148,10 +201,10 @@
 					sound_to_play = 'sound/voice/announcement/landfall_crew_0_minutes_shuttle.ogg'
 				)
 			if(4)
-				status_display_text = "BTTLE"
+				status_display_text = "WAR"
 				round_time_next = 60*60
 				add_objectives()
-			if(5)
+			if(5 to INFINITY)
 				status_display_text = "VOTE"
 				round_time_next = -1
 				SSvote.create_vote(/vote/continue_round)

@@ -12,7 +12,13 @@ SUBSYSTEM_DEF(client)
 
 	var/list/queued_automatics = list()
 
-	preloop = TRUE
+/subsystem/client/unclog(var/mob/caller)
+	for(var/ckey in all_clients) //This should never be tick checked.
+		var/client/C = all_clients[ckey]
+		if(!C)
+			all_clients -= ckey
+			continue
+	. = ..()
 
 /subsystem/client/on_life()
 
@@ -35,11 +41,14 @@ SUBSYSTEM_DEF(client)
 		if(do_slow)
 			C.on_life_slow()
 		if(world_state >= STATE_RUNNING)
-			CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+			CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 	for(var/k in queued_automatics)
 		var/obj/item/weapon/ranged/R = k
 		var/list/data = queued_automatics[k]
+		if(!data || !length(data))
+			queued_automatics -= k
+			continue
 		var/mob/caller = data[1]
 		var/list/params = data[2]
 		var/damage_multiplier = data[3]
@@ -52,7 +61,7 @@ SUBSYSTEM_DEF(client)
 			R.next_shoot_time = max(R.next_shoot_time,world.time + real_burst_delay)
 			R.current_bursts = 1
 			queued_automatics -= k
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 
 	return TRUE

@@ -21,9 +21,6 @@ var/global/list/turf/simulated/floor/water_shores = list()
 	desired_light_range = 8
 	desired_light_color = "#158996"
 
-	water_reagent = /reagent/nutrition/water
-	reagents = /reagent_container/turf/
-
 	var/map_color_max_depth = "#031A44"
 	var/map_color_min_depth = "#3DAEE1"
 
@@ -35,7 +32,7 @@ var/global/list/turf/simulated/floor/water_shores = list()
 	var/alpha_min = 75
 	var/alpha_max = 150
 
-	mouse_opacity = 0
+	mouse_opacity = 1
 
 	var/shore = FALSE
 
@@ -73,6 +70,11 @@ var/global/list/turf/simulated/floor/water_shores = list()
 	name = "sea water"
 	fishing_rewards = /loot/fishing/sea
 
+/turf/simulated/liquid/water/memorial
+	name = "water"
+	fishing_rewards = null
+	depth = VIEW_RANGE * MAX_DEPTH
+
 /turf/simulated/liquid/water/river
 	name = "forest river water"
 	fishing_rewards = /loot/fishing/river
@@ -87,7 +89,7 @@ var/global/list/turf/simulated/floor/water_shores = list()
 
 /turf/simulated/liquid/water/river/jungle/Finalize()
 	. = ..()
-	if(depth <= 2 && ( (shore && prob(90)) || prob(40)) )
+	if(depth <= 2 && ( (shore && prob(30)) || prob(10)) )
 		for(var/j=1,j<=rand(2,3),j++)
 			var/obj/structure/scenery/reeds/R = new(src)
 			R.pixel_x = rand(-8,8)

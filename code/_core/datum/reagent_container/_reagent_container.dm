@@ -25,10 +25,10 @@
 
 	var/temperature_change_mul = 1 //The multiplier for temperature change.
 
-/reagent_container/Destroy()
+/reagent_container/PreDestroy()
 	owner = null
 	SSreagent.all_temperature_reagent_containers -= src
-	return ..()
+	. = ..()
 
 /reagent_container/proc/get_contents_english()
 
@@ -65,7 +65,7 @@
 		if(R.act_explode(src,owner,source,epicenter,magnitude,desired_loyalty_tag))
 			. = TRUE
 
-/reagent_container/proc/metabolize(var/mob/living/living_owner,var/multiplier=1) //Assumed that it is metabolism per second.
+/reagent_container/proc/metabolize(var/atom/movable/owner,var/multiplier=1) //Assumed that it is metabolism per second.
 
 	if(!volume_current)
 		return
@@ -87,14 +87,17 @@
 			metabolism_limit = 10
 		if(REAGENT_METABOLISM_SKIN)
 			metabolism_limit = 50
+		if(REAGENT_METABOLISM_PLANT)
+			metabolism_limit = 100
 
 	if(metabolism_limit <= 0)
 		return //Something went wrong.
 
-
 	//Zeroth pass for nutrition bonuses. Stacks multiplicatively.
-	var/power_multiplier = living_owner.chem_power
-	if(flags_metabolism & REAGENT_METABOLISM_STOMACH)
+	var/power_multiplier = 1
+	if(flags_metabolism & REAGENT_METABOLISM_STOMACH && is_living(owner))
+		var/mob/living/living_owner = owner
+		power_multiplier = living_owner.chem_power
 		for(var/r_id in stored_reagents)
 			var/reagent/R = REAGENT(r_id)
 			var/volume = stored_reagents[r_id]
@@ -124,6 +127,8 @@
 				amount_to_metabolize = R.metabolism_stomach
 			if(REAGENT_METABOLISM_SKIN)
 				amount_to_metabolize = R.metabolism_skin
+			if(REAGENT_METABOLISM_PLANT)
+				amount_to_metabolize = R.metabolism_plant
 		amount_to_metabolize *= multiplier
 		amount_to_metabolize = min(amount_to_metabolize,volume) //Never go above the volume.
 		amounts_to_metabolize[r_id] = amount_to_metabolize
@@ -141,21 +146,25 @@
 			var/amount_metabolized = 0
 			switch(src.flags_metabolism)
 				if(REAGENT_METABOLISM_BLOOD)
-					amount_metabolized += R.on_metabolize_blood(living_owner,src,amount_to_metabolize,volume,local_power_multiplier)
+					amount_metabolized += R.on_metabolize_blood(owner,src,amount_to_metabolize,volume,local_power_multiplier)
 				if(REAGENT_METABOLISM_STOMACH)
-					amount_metabolized += R.on_metabolize_stomach(living_owner,src,amount_to_metabolize,volume,local_power_multiplier)
+					amount_metabolized += R.on_metabolize_stomach(owner,src,amount_to_metabolize,volume,local_power_multiplier)
 				if(REAGENT_METABOLISM_SKIN)
-					amount_metabolized += R.on_metabolize_skin(living_owner,src,amount_to_metabolize,volume,local_power_multiplier)
+					amount_metabolized += R.on_metabolize_skin(owner,src,amount_to_metabolize,volume,local_power_multiplier)
+				if(REAGENT_METABOLISM_PLANT)
+					amount_metabolized += R.on_metabolize_plant(owner,src,amount_to_metabolize,volume,local_power_multiplier)
 			if(R.overdose_threshold > 0 && volume >= R.overdose_threshold)
-				amount_metabolized += R.on_overdose(living_owner,src,amount_metabolized,volume) //Chem power not considered here.
+				amount_metabolized += R.on_overdose(owner,src,amount_metabolized,volume) //Chem power not considered here.
 			if(amount_metabolized > 0)
 				add_reagent(r_id,-amount_metabolized,TNULL,FALSE,FALSE)
 				if(R.blood_toxicity_multiplier != 0)
 					blood_toxicity_to_add += amount_metabolized*R.blood_toxicity_multiplier
 				actual_metabolism += amount_metabolized
-		living_owner.blood_toxicity += blood_toxicity_to_add
+		if(is_living(owner))
+			var/mob/living/living_owner = owner
+			living_owner.blood_toxicity += blood_toxicity_to_add
 
-	update_container(living_owner)
+	update_container(owner)
 
 	return actual_metabolism
 
@@ -381,7 +390,7 @@
 	var/reagent_recipe/found_recipe = null
 	for(var/k in recipes_to_check)
 
-		CHECK_TICK_SAFE(75,FPS_SERVER)
+		CHECK_TICK(75,FPS_SERVER)
 
 		var/reagent_recipe/recipe = k
 
@@ -393,7 +402,7 @@
 		var/good_recipe = TRUE
 
 		for(var/reagent_type in recipe.required_reagents)
-			CHECK_TICK_SAFE(50,FPS_SERVER)
+			CHECK_TICK(50,FPS_SERVER)
 			if(recipe.required_container && !istype(owner,recipe.required_container))
 				if(debug) log_debug("Recipe [recipe.name] invalid because of wrong container type.")
 				good_recipe = FALSE
@@ -468,7 +477,7 @@
 	if(found_recipe.result && owner && !istype(owner,found_recipe.result))
 		update_container(caller,FALSE)
 		while(volume_current > 0)
-			CHECK_TICK_SAFE(75,FPS_SERVER)
+			CHECK_TICK(75,FPS_SERVER)
 			var/obj/item/A = new found_recipe.result(get_turf(owner))
 			INITIALIZE(A)
 			FINALIZE(A)
@@ -568,7 +577,7 @@
 	for(var/r_id in stored_reagents)
 		var/volume = stored_reagents[r_id]
 		var/ratio = volume/total_volume
-		. += -add_reagent(-ratio*amount,should_update=FALSE,check_recipes=FALSE,caller=caller)
+		. += -add_reagent(r_id,-ratio*amount,should_update=FALSE,check_recipes=FALSE,caller=caller)
 
 	if(should_update)
 		update_container(caller)

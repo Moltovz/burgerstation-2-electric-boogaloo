@@ -7,7 +7,7 @@
 
 	for(var/k in all_mobs)
 		var/mob/M = k
-		if(M.qdeleting)
+		if(!M || M.qdeleting)
 			continue
 		if(M.ckey_last == ckey)
 			. = M
@@ -17,6 +17,9 @@
 			//No break here as ckey_last needs a priority.
 
 /client/proc/make_ghost(var/turf/desired_loc)
+
+	if(!desired_loc && mob)
+		desired_loc = get_turf(mob)
 
 	if(!desired_loc)
 		desired_loc = FALLBACK_TURF
@@ -64,7 +67,7 @@
 	all_mobs_with_clients += M
 	if(!all_mobs_with_clients_by_z["[M.last_z]"])
 		all_mobs_with_clients_by_z["[M.last_z]"] = list()
-	all_mobs_with_clients_by_z["[M.last_z]"] += src
+	all_mobs_with_clients_by_z["[M.last_z]"] += M
 
 	view = M.view
 
@@ -110,7 +113,9 @@
 	to_chat(span("notice","Successfully loaded character [U.loaded_data["name"]]."))
 	stop_music_track(src)
 
-	var/mob/living/advanced/player/P = new(FALLBACK_TURF,src)
+	var/turf/T = length(world_spawnpoints) ? pick(world_spawnpoints) : FALLBACK_TURF
+
+	var/mob/living/advanced/player/P = new(T,src)
 	INITIALIZE(P)
 	FINALIZE(P)
 

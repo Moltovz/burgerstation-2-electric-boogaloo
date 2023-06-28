@@ -8,15 +8,16 @@ SUBSYSTEM_DEF(map)
 	var/list/z_icons = list()
 
 /subsystem/map/Initialize()
+	set background = TRUE
 	log_subsystem(src.name,"Creating maps...")
 	for(var/z=1,z<=world.maxz,z++)
 		var/icon/I = ICON_INVISIBLE
 		I.Crop(1,1,world.maxx,world.maxy) //Match it to the world size.
 		log_subsystem(src.name,"Creating maps of level [z]...")
 		for(var/x=1,x<=world.maxx,x++) for(var/y=1,y<=world.maxy,y++)
-			CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+			CHECK_TICK_HARD
 			var/turf/simulated/S = locate(x,y,z)
-			if(!istype(S))
+			if(!S || !is_simulated(S))
 				continue
 			var/found_color
 			var/area/A = S.loc

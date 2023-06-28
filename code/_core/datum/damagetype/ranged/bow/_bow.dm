@@ -1,13 +1,13 @@
 /damagetype/ranged/bow/
 	attack_damage_base = list(
-		PIERCE = 100,
-		BLADE = 40,
-		BLUNT = 30
+		PIERCE = 60,
+		BLADE = 20,
+		BLUNT = 10
 	)
 
 	attack_damage_penetration = list(
-		PIERCE = 100,
-		BLADE = 50,
+		PIERCE = 50,
+		BLADE = 25,
 		BLUNT = 0
 	)
 
@@ -37,3 +37,5 @@
 	)
 
 	sneak_attack_multiplier = 4
+
+	alert_on_impact = ALERT_LEVEL_NOISE

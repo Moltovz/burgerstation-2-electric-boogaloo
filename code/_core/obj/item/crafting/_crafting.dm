@@ -56,12 +56,12 @@
 
 	var/opening = FALSE
 	for(var/obj/hud/inventory/crafting/I in A.inventories_by_id) //Hide other inventory buttons
-		CHECK_TICK_SAFE(100,FPS_SERVER*0.5)
+		CHECK_TICK(100,FPS_SERVER*0.5)
 		I.alpha = 0
 		I.mouse_opacity = 0
 
 	for(var/obj/hud/inventory/crafting/I in inventories)
-		CHECK_TICK_SAFE(100,FPS_SERVER*0.5)
+		CHECK_TICK(100,FPS_SERVER*0.5)
 		I.update_owner(A)
 		if(opening || !I.alpha)
 			animate(I,alpha=initial(I.alpha),time=4)
@@ -117,6 +117,8 @@
 					break
 				for(var/j in product_slot.contents)
 					var/obj/item/I2 = j
+					if(!I2 || I2.qdeleting)
+						continue
 					if(I.can_transfer_stacks_to(I2))
 						I.transfer_amount_to(I2)
 						if(I.qdeleting)

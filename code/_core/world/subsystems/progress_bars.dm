@@ -14,14 +14,21 @@ SUBSYSTEM_DEF(progressbars)
 /subsystem/progressbars/unclog(var/mob/caller)
 
 	for(var/k in all_progress_bars)
+		if(!k)
+			all_progress_bars -= k
+			continue
 		var/list/progress_list = all_progress_bars[k]
+		if(!progress_list || !length(progress_list))
+			all_progress_bars -= k
+			continue
 		var/obj/hud/progress_bar/P = progress_list["progress_bar"]
-		qdel(P)
+		if(!P || P.qdeleting)
+			all_progress_bars -= k
+			continue
 		all_progress_bars -= k
+		qdel(P)
 
-	broadcast_to_clients(span("danger","Removed all progress bars."))
-
-	return ..()
+	. = ..()
 
 /subsystem/progressbars/proc/process_progress_bar(var/k)
 	var/atom/A = k
@@ -68,7 +75,7 @@ SUBSYSTEM_DEF(progressbars)
 			log_error("Warning! A progress bar belonging to [A.get_debug_name()] didn't run properly, and thus was deleted.")
 			qdel(P)
 			all_progress_bars -= A
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 	for(var/k in progress_bars_to_delete)
 		var/obj/hud/progress_bar/PB = k
@@ -76,7 +83,7 @@ SUBSYSTEM_DEF(progressbars)
 		if(time <= world.time)
 			qdel(PB)
 			progress_bars_to_delete -= k
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 	return TRUE
 

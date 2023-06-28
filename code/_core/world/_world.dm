@@ -36,6 +36,7 @@ var/global/world_state = STATE_STARTING
 	createtypecache(/loot)
 	createtypecache(/area)
 	createtypecache(/area/shuttle)
+	createtypecache(/mob)
 	createtypecache(/mob/living)
 	createtypecache(/mob/living/advanced)
 	createtypecache(/mob/living/advanced/player)
@@ -53,6 +54,7 @@ var/global/world_state = STATE_STARTING
 	createtypecache(/obj/item/weapon/ranged/bullet)
 	createtypecache(/obj/item/weapon/ranged/bullet/magazine)
 	createtypecache(/obj/item/magazine)
+	createtypecache(/obj/item/material)
 	createtypecache(/obj/item/bullet_cartridge)
 	createtypecache(/obj/hud)
 	createtypecache(/obj/hud/inventory)
@@ -61,6 +63,7 @@ var/global/world_state = STATE_STARTING
 	createtypecache(/turf/simulated/floor)
 	createtypecache(/turf/simulated/floor/tile)
 	createtypecache(/turf/simulated/wall)
+	createtypecache(/turf/simulated/liquid/water)
 	createtypecache(/turf/unsimulated)
 	createtypecache(/reagent/nutrition)
 	. = ..()
@@ -71,7 +74,7 @@ var/global/world_state = STATE_STARTING
 /world/proc/update_server_status()
 
 	var/server_name = CONFIG("SERVER_NAME","Unofficial Burgerstation 13 Server")
-	var/server_link = CONFIG("SERVER_DISCORD","https://discord.gg/a2wHSqu")
+	var/server_link = CONFIG("SERVER_DISCORD","")
 	var/github_name = "SS13 <b>FROM SCRATCH</b>"
 	var/duration = get_clock_time(FLOOR(true_time()/10,1),FORMAT_HOUR | FORMAT_MINUTE)
 	var/description = "Gamemode: <b>[SSgamemode.active_gamemode ? SSgamemode.active_gamemode.name : "Lobby" ]</b><br>Map: <b>[SSdmm_suite.map_name ? SSdmm_suite.map_name : "Planet ([world.maxx]x[world.maxy])"]</b><br>Duration: <b>[duration]</b>"
@@ -86,25 +89,12 @@ var/global/world_state = STATE_STARTING
 
 	return TRUE
 
-
-/world/Error(var/exception/e)
-	log_error("[e.name] in [e.file]:[e.line].\n[e.desc]")
-
-	for(var/k in all_runtimes)
-		var/mob/living/simple/cat/runtime/R = k
-		if(R.qdeleting)
-			all_runtimes -= k
-			continue
-		R.reproduce()
-
-	return TRUE
-
 /world/Del()
 	SSdiscord.send_message("Shutting down world...")
 	return ..()
 
 /world/proc/play_round_end_sound()
-	CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+	CHECK_TICK_HARD
 	var/chosen_sound = pick(SSsound.round_end_sounds)
 	play_sound_global(chosen_sound,all_mobs_with_clients)
 	sleep(30)
@@ -128,7 +118,7 @@ var/global/world_state = STATE_STARTING
 	for(var/k in all_clients)
 		var/client/C = all_clients[k]
 		C << "Rebooting world. Stick around to automatically rejoin."
-	CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+	sleep(30)
 	Reboot(0)
 	return TRUE
 
@@ -159,21 +149,24 @@ var/global/world_state = STATE_STARTING
 /world/proc/save_all_characters()
 	for(var/k in all_players) ///Players only.
 		var/mob/living/advanced/player/P = k
+		if(!P)
+			log_error("Warning: Tried saving a null player!")
+			continue
+		if(P.dead)
+			continue
 		if(P.qdeleting)
 			log_error("Warning: Tried saving [P.get_debug_name()], which was qdeleting!")
 			continue
 		if(!P.ckey_last)
-			if(!P.ai) log_error("Warning: Tried saving [P.get_debug_name()] without a ckey!")
+			if(!P.ai) log_error("Warning: Tried saving [P.get_debug_name()] without a ckey_last assigned!")
 			continue
 		var/savedata/client/mob/M = ckey_to_mobdata[P.ckey_last]
-		if(P.dead)
-			continue
 		if(M.save_character(P))
 			P.to_chat(span("notice","Your character was automatically saved."))
 		else
 			P.to_chat(span("danger","Save error! Your character could not be saved!"))
 		sleep(1)
-		CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+		CHECK_TICK_HARD
 
 /world/proc/end(var/reason,var/shutdown=FALSE)
 

@@ -5,6 +5,7 @@
 	cowardice = -1
 	retaliate = TRUE
 	resist_grabs = 2
+	night_vision = 0
 
 	objective_delay = DECISECONDS_TO_TICKS(10)
 
@@ -26,3 +27,5 @@
 	guard = TRUE
 
 	use_blood_sight = FALSE
+
+	attack_movement_obstructions = TRUE

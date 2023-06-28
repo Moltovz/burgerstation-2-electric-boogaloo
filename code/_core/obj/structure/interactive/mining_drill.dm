@@ -4,11 +4,7 @@
 	icon_state = "mining_drill"
 	anchored = FALSE
 
-	var/drill_depth = 0
-	var/drill_counter = 0
 	can_rotate = FALSE
-
-	var/obj/structure/interactive/ore_deposit_ground/found_deposit
 
 	collision_flags = FLAG_COLLISION_WALL
 
@@ -24,16 +20,26 @@
 	desired_light_range = 2
 	desired_light_color = "#FFFFFF"
 
-/obj/structure/interactive/mining_drill/Finalize()
-	SShorde.all_drills += src
-	SShorde.all_drills[src] = world.time + SECONDS_TO_DECISECONDS(15)
-	. = ..()
+	plane = PLANE_MOVABLE
+	layer = LAYER_LARGE_OBJ
 
+	var/obj/structure/interactive/ore_deposit/floor/found_deposit
+	var/atom/drop_atom
+	var/list/obj/structure/interactive/mining_brace/attached_braces = list()
 
-/obj/structure/interactive/mining_drill/Destroy()
-	found_deposit = null
+/obj/structure/interactive/mining_drill/PreDestroy()
+	CALLBACK_REMOVE("\ref[src]_do_drill")
 	SShorde.all_drills -= src
 	. = ..()
+
+/obj/structure/interactive/mining_drill/Destroy()
+	. = ..()
+	found_deposit = null
+	drop_atom = null
+	attached_braces.Cut()
+	attached_braces = null
+
+
 
 /obj/structure/interactive/mining_drill/on_destruction(var/damage = TRUE)
 	create_destruction(get_turf(src),list(/obj/item/material/sheet/ = 5),/material/steel)
@@ -42,14 +48,16 @@
 
 /obj/structure/interactive/mining_drill/update_icon()
 
-	if(IS_THINKING(src))
+	. = ..()
+
+	if(CALLBACK_EXISTS("\ref[src]_do_drill"))
 		icon_state = "mining_drill_active"
 	else if(anchored)
 		icon_state = "mining_drill_braced"
 	else
 		icon_state = "mining_drill"
 
-	return ..()
+
 
 /obj/structure/interactive/mining_drill/clicked_on_by_object(var/mob/caller,var/atom/object,location,control,params)
 
@@ -57,7 +65,7 @@
 	INTERACT_CHECK_OBJECT
 	INTERACT_DELAY(5)
 
-	if(IS_THINKING(src))
+	if(CALLBACK_EXISTS("\ref[src]_do_drill"))
 		deactivate(caller)
 	else
 		activate(caller)
@@ -66,67 +74,121 @@
 
 /obj/structure/interactive/mining_drill/post_move(var/atom/old_loc)
 	. = ..()
-	drill_depth = 0
-	found_deposit = null
+	if(. && CALLBACK_EXISTS("\ref[src]_do_drill")) deactivate()
 
 /obj/structure/interactive/mining_drill/proc/activate(var/mob/caller)
-	if(!check_valid())
+
+	if(!check_braces())
 		caller.to_chat(span("warning","\The [src] doesn't seem to want to turn on!"))
 		return FALSE
+
 	if(caller)
 		visible_message(span("notice","\The [caller.name] activates \the [src.name]."),span("notice","You activate \the [src.name]."))
 	else
-		visible_message(span("warning","\The [src.name] powers up on its own!."))
+		visible_message(span("warning","\The [src.name] powers up!"))
+
+	SShorde.all_drills[src] = world.time + SECONDS_TO_DECISECONDS(15)
 	set_anchored(TRUE)
-	START_THINKING(src)
+	CALLBACK("\ref[src]_do_drill",SECONDS_TO_DECISECONDS(1.8),src,src::do_drill())
 	update_sprite()
+
 	return TRUE
 
 /obj/structure/interactive/mining_drill/proc/deactivate(var/mob/caller)
+
 	if(caller)
 		visible_message(span("notice","\The [caller.name] turns off \the [src.name]."),span("notice","You turn off \the [src.name]."))
 	else
-		visible_message(span("warning","\The [src.name] shuts itself down!"))
+		visible_message(span("warning","\The [src.name] powers down!"))
+
+	SShorde.all_drills -= src
+	found_deposit = null
+	drop_atom = null
+	attached_braces.Cut()
 	set_anchored(FALSE)
-	STOP_THINKING(src)
+	CALLBACK_REMOVE("\ref[src]_do_drill")
 	update_sprite()
+
 	return TRUE
 
+/obj/structure/interactive/mining_drill/proc/is_valid_brace(var/obj/structure/interactive/mining_brace/MB)
+	return MB && MB.anchored && get_step(MB,MB.dir) == src.loc
 
-/obj/structure/interactive/mining_drill/proc/check_valid()
+/obj/structure/interactive/mining_drill/proc/check_braces()
 
-	for(var/obj/structure/interactive/mining_brace/MB in orange(1,src))
-		if(MB.qdeleting || !MB.anchored || get_step(MB,MB.dir) != src.loc)
+	attached_braces.Cut()
+
+	for(var/obj/structure/interactive/mining_brace/MB1 in orange(1,src))
+		if(!is_valid_brace(MB1))
 			continue
-		var/obj/structure/interactive/mining_brace/MB2 = locate() in get_step(src,MB.dir).contents
-		if(!MB2 || !MB2.anchored || get_step(MB2,MB2.dir) != src.loc)
+		var/obj/structure/interactive/mining_brace/MB2 = locate() in get_step(src,MB1.dir).contents
+		if(!is_valid_brace(MB2))
 			continue
+		attached_braces += MB1
+		attached_braces += MB2
 		return TRUE
 
 	return FALSE
 
-/obj/structure/interactive/mining_drill/think()
+/obj/structure/interactive/mining_drill/proc/do_drill()
+
+	var/turf/current_turf = get_turf(src)
+
+	//Check if it's actually anchored.
+	if(!anchored || !current_turf)
+		deactivate()
+		return FALSE
+
+	//Check for the braces.
+	for(var/k in attached_braces)
+		var/obj/structure/interactive/mining_brace/MB = k
+		if(!is_valid_brace(MB))
+			deactivate()
+			return FALSE
+
+	//Deposit checking.
+	if(found_deposit && found_deposit.qdeleting)
+		found_deposit = null
+
+	if(!found_deposit) //Check the turf it is on.
+		found_deposit = locate() in current_turf
+
+	if(!found_deposit) //Check adjacent turfs.
+		found_deposit = locate() in orange(1,current_turf)
 
 	if(!found_deposit)
-		found_deposit = locate() in src.loc
+		deactivate()
+		return FALSE
 
-	 if(!anchored || !found_deposit || found_deposit.ore_count <= 0 || found_deposit.qdeleting)
-	 	deactivate()
-	 	found_deposit = null
-	 	return FALSE
+	//Figure out the drop atom.
+	if(drop_atom && get_dist(current_turf,drop_atom) > 1)
+		drop_atom = null
 
-	drill_depth++
-	if(drill_depth >= 100)
-		drill_counter++
-		if(drill_counter > 60)
-			found_deposit.drop_ore()
-			found_deposit.ore_count--
-			if(found_deposit.ore_count <= 0 )
-				qdel(found_deposit)
-				src.visible_message(span("warning","The [found_deposit.name] runs dry!"))
-				found_deposit = null
-				deactivate()
-			drill_counter = 0
+	if(!drop_atom)
+		var/obj/structure/interactive/ore_box/OB = locate() in orange(1,current_turf)
+		if(OB)
+			drop_atom = OB
+
+	//Fallback #1
+	if(!drop_atom)
+		for(var/d in list(SOUTH,NORTH,EAST,WEST))
+			var/turf/T = get_step(current_turf,d)
+			if(T.density || T.has_dense_atom)
+				continue
+			drop_atom = T
+			break
+
+	//Fallback #2
+	if(!drop_atom)
+		drop_atom = current_turf
+
+	//Finally, create the ore.
+	if(!found_deposit.create_ore(null,drop_atom,3))
+		return null
+
+	play_sound('sound/machines/mining_drill.ogg',current_turf)
+
+	CALLBACK("\ref[src]_do_drill",SECONDS_TO_DECISECONDS(1.8),src,src::do_drill())
 
 	return TRUE
 
@@ -135,6 +197,9 @@
 	icon = 'icons/obj/structure/big_drill.dmi'
 	icon_state = "mining_brace"
 	anchored = FALSE
+
+	plane = PLANE_MOVABLE
+	layer = LAYER_LARGE_OBJ
 
 	collision_flags = FLAG_COLLISION_WALL
 
@@ -150,11 +215,6 @@
 	create_destruction(get_turf(src),list(/obj/item/material/sheet/ = 5),/material/steel)
 	. = ..()
 	qdel(src)
-
-/obj/structure/interactive/mining_brace/PreDestroy()
-	var/obj/structure/interactive/mining_drill/MD = locate() in get_step(src,dir)
-	MD?.check_valid()
-	. = ..()
 
 /obj/structure/interactive/mining_brace/clicked_on_by_object(var/mob/caller,var/atom/object,location,control,params)
 

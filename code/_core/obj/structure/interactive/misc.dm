@@ -51,14 +51,14 @@ obj/structure/interactive/misc/urinal
 	desc = "*obligatory piss joke*"
 	desc_extended = "A urinal on the wall as decor to liven up the area."
 	icon_state = "urinal"
-	plane = PLANE_OBJ
+	plane = PLANE_MOVABLE
 
 obj/structure/interactive/misc/mirror
 	name = "mirror"
 	desc = "Magic mirror on the wall, who is the most robust of them all?"
 	desc_extended = "Stand in front of this to change your appearance."
 	icon_state = "mirror"
-	plane = PLANE_OBJ
+	plane = PLANE_MOVABLE
 
 	density = TRUE
 
@@ -68,7 +68,7 @@ obj/structure/interactive/misc/mirror/chargen
 obj/structure/interactive/misc/mirror/chargen/limited
 	limited = TRUE
 
-obj/structure/interactive/misc/mirror/chargen/Crossed(atom/movable/O)
+obj/structure/interactive/misc/mirror/chargen/Crossed(atom/movable/O,atom/OldLoc)
 	if(is_player(O))
 		var/mob/living/advanced/player/P = O
 		if(P.client)
@@ -78,7 +78,6 @@ obj/structure/interactive/misc/mirror/chargen/Crossed(atom/movable/O)
 				P.add_chargen_buttons()
 			P.handle_hairstyle_chargen(-1,update_blends=FALSE)
 			P.handle_beardstyle_chargen(-1,update_blends=FALSE)
-			P.update_all_blends()
 			P.show_hud(TRUE,FLAG_HUD_CHARGEN,FLAG_HUD_SPECIAL,speed=SECONDS_TO_DECISECONDS(3))
 
 	return ..()
@@ -97,13 +96,12 @@ obj/structure/interactive/misc/mirror/chargen/Uncrossed(atom/movable/O)
 	desc_extended = "Who could even use this?"
 	icon_state = "mirror_broke"
 
-/obj/structure/interactive/misc/mirror/cracked/chargen/Crossed(atom/movable/O)
+/obj/structure/interactive/misc/mirror/cracked/chargen/Crossed(atom/movable/O,atom/OldLoc)
 	if(istype(O,/mob/living/advanced/player/antagonist/))
 		var/mob/living/advanced/player/P = O
 		P.add_chargen_buttons()
-		P.handle_hairstyle_chargen(-1,update_blends=FALSE)
-		P.handle_beardstyle_chargen(-1,update_blends=FALSE)
-		P.update_all_blends()
+		P.handle_hairstyle_chargen(-1)
+		P.handle_beardstyle_chargen(-1)
 		P.show_hud(TRUE,FLAG_HUD_CHARGEN,FLAG_HUD_SPECIAL,speed=SECONDS_TO_DECISECONDS(3))
 
 /obj/structure/interactive/misc/mirror/cracked/chargen/Uncrossed(atom/movable/O)
@@ -125,4 +123,4 @@ obj/structure/interactive/misc/sink
 	desc = "Wa'tr. Wa'tr free o' charge."
 	desc_extended = "A standing sink as decor to liven up the area. What? You actually expected this to dispense water free of charge?"
 	icon_state = "sink"
-	plane = PLANE_OBJ
+	plane = PLANE_MOVABLE

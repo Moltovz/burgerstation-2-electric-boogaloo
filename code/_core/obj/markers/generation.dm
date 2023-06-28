@@ -35,13 +35,19 @@ var/global/list/all_generation_markers = list()
 
 	alpha = 100
 
+	var/custom_object_to_place = FALSE
+
 /obj/marker/generation/New(var/desired_loc)
 	. = ..()
 	all_generation_markers += src
 
-/obj/marker/generation/Destroy()
-	. = ..()
+/obj/marker/generation/PreDestroy()
 	all_generation_markers -= src
+	. = ..()
+
+
+/obj/marker/generation/proc/get_object_to_place(var/turf/T,var/objects_placed=0,var/grow_left=0)
+	CRASH("[src.type] was improperly setup with var custom_object_to_place!")
 
 /obj/marker/generation/proc/generate_marker()
 
@@ -59,17 +65,22 @@ var/global/list/all_generation_markers = list()
 		var/turf/T = valid_turfs[1]
 		valid_turfs -= T
 		desired_grow--
-		CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+		CHECK_TICK_HARD
 		if(forbidden_turfs[T])
 			continue
 		forbidden_turfs[T] = TRUE //Already processed
 
-		if(T != src.loc && !T.world_spawn && !prob(hole_chance) && !ispath(object_to_place,T) && (!turf_whitelist || istype(T,turf_whitelist)))
-			new object_to_place(T)
+		if(T != src.loc && !prob(hole_chance) && !ispath(object_to_place,T) && (!turf_whitelist || istype(T,turf_whitelist)))
+			if(custom_object_to_place)
+				var/atom/placed_object = get_object_to_place(T,objects_placed,desired_grow)
+				if(!placed_object)
+					break
+			else
+				new object_to_place(T)
 			objects_placed += 1
 
 		for(var/v in DIRECTIONS_CARDINAL)
-			CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+			CHECK_TICK_HARD
 			var/turf/T2 = get_step(T,v)
 			if(!T2)
 				continue
@@ -85,7 +96,7 @@ var/global/list/all_generation_markers = list()
 			if(prob(skip_chance))
 				forbidden_turfs[T2] = TRUE
 				continue
-			if(ispath(object_to_place,/turf/))
+			if(ispathcache(object_to_place,/turf/))
 				if(T.loc != T2.loc) //Different area.
 					forbidden_turfs[T2] = TRUE //Already processed
 					continue

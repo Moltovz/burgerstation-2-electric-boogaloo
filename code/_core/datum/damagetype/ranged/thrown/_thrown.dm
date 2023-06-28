@@ -4,9 +4,9 @@
 
 /damagetype/ranged/thrown/kunai
 	attack_damage_base = list(
-		PIERCE = 100,
+		PIERCE = 75,
 		BLADE = 40,
-		BLUNT = 30
+		BLUNT = 10
 	)
 
 	attack_damage_penetration = list(
@@ -29,15 +29,6 @@
 
 	skill_damage = list(
 
-	)
-
-	bonus_experience_skill = list(
-		SKILL_RANGED = 25
-	)
-
-	bonus_experience_attribute = list(
-		ATTRIBUTE_STRENGTH = 10,
-		ATTRIBUTE_DEXTERITY = 10
 	)
 
 	sneak_attack_multiplier = 4

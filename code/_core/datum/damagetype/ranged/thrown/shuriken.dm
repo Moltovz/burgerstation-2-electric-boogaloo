@@ -1,8 +1,8 @@
 /damagetype/ranged/thrown/shuriken
 	attack_damage_base = list(
-		PIERCE = 50,
-		BLADE = 100,
-		BLUNT = 25
+		PIERCE = 40,
+		BLADE = 75,
+		BLUNT = 10
 	)
 
 	attack_damage_penetration = list(
@@ -25,15 +25,6 @@
 
 	skill_damage = list(
 
-	)
-
-	bonus_experience_skill = list(
-		SKILL_RANGED = 25
-	)
-
-	bonus_experience_attribute = list(
-		ATTRIBUTE_STRENGTH = 10,
-		ATTRIBUTE_DEXTERITY = 10
 	)
 
 	sneak_attack_multiplier = 4
@@ -65,15 +56,6 @@
 
 	skill_damage = list(
 
-	)
-
-	bonus_experience_skill = list(
-		SKILL_RANGED = 25
-	)
-
-	bonus_experience_attribute = list(
-		ATTRIBUTE_STRENGTH = 10,
-		ATTRIBUTE_DEXTERITY = 10
 	)
 
 	sneak_attack_multiplier = 4

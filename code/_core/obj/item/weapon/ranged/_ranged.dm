@@ -5,9 +5,6 @@
 
 	var/damage_mod = 1 //Inherit damage multiplier for the gun. Should be increased if the gun has a longer barrel length.
 
-	var/manufacturing_quality = 1 //The general quality of the weapon. Higher values mean that the weapon is more accurate and handles heat/recoil/whatever better.
-	//NanoTrasen quality should be 1.
-
 	var/automatic = FALSE
 	var/max_bursts = 0 //Inherint maximum amount of bursts.
 	var/current_maxmium_bursts = 0 //Read only. Controlled by firemode changing.
@@ -22,7 +19,7 @@
 
 	var/damagetype/ranged_damage_type
 	var/projectile_speed = TILE_SIZE - 1 //Fallback value
-	var/obj/projectile/projectile = /obj/projectile/ //Fallback value
+	var/obj/projectile/projectile //Don't make this a fallback.
 	var/bullet_count = 1 //Fallback value. How many bullets it should shoot.
 
 	var/view_punch_to_add = 0 //Fallback value.
@@ -178,16 +175,7 @@
 
 /obj/item/weapon/ranged/clicked_on_by_object(var/mob/caller as mob,var/atom/object,location,control,params) //The src was clicked on by the object
 
-	if(is_inventory(object) && (caller.attack_flags & CONTROL_MOD_DISARM))
-		var/obj/hud/inventory/INV = object
-		INTERACT_CHECK
-		INTERACT_CHECK_OBJECT
-		INTERACT_DELAY(5)
-		var/obj/item/I = remove_attachment(caller)
-		if(I) INV.add_object(I)
-		return TRUE
-
-	else if(is_item(object))
+	if(is_item(object))
 		var/obj/item/I = object
 		if(istype(I,/obj/item/attachment))
 			INTERACT_CHECK
@@ -201,6 +189,10 @@
 				INTERACT_CHECK
 				INTERACT_CHECK_OBJECT
 				INTERACT_DELAY(5)
+
+				if(remove_attachment(caller))
+					return TRUE
+
 				if(istype(firing_pin))
 					firing_pin.drop_item(get_turf(src))
 					caller.visible_message(span("notice","\The [caller.name] removes a firing pin from \the [src.name]."),span("notice","You remove \the [firing_pin.name] from \the [src.name]."))
@@ -386,7 +378,7 @@ obj/item/weapon/ranged/proc/play_shoot_sounds(var/mob/caller,var/list/shoot_soun
 
 	return TRUE
 
-obj/item/weapon/ranged/proc/shoot(var/mob/caller,var/atom/object,location,params,var/damage_multiplier=1,var/click_called=FALSE)
+obj/item/weapon/ranged/proc/shoot(var/mob/caller,var/atom/object,location,params,var/damage_multiplier=1,var/click_called=FALSE,var/projectile_override = null)
 
 	if(!pre_shoot(caller,object,location,params,damage_multiplier))
 		return FALSE
@@ -394,7 +386,7 @@ obj/item/weapon/ranged/proc/shoot(var/mob/caller,var/atom/object,location,params
 	var/quality_bonus = get_quality_bonus(0.5,2)
 	var/quality_penalty = max(1,1/get_quality_bonus(0.25,2))
 
-	var/obj/projectile/projectile_to_use = projectile
+	var/obj/projectile/projectile_to_use = projectile_override ? projectile_override : projectile
 	var/list/shoot_sounds_to_use = shoot_sounds
 	var/damage_type_to_use = get_ranged_damage_type()
 	var/bullet_count_to_use = bullet_count
@@ -621,16 +613,19 @@ obj/item/weapon/ranged/proc/shoot(var/mob/caller,var/atom/object,location,params
 /obj/item/weapon/ranged/proc/handle_automatic(var/mob/caller,params,var/damage_multiplier=1,var/max_bursts_to_use=0,var/shoot_delay_to_use=1)
 
 	var/mob/living/advanced/player/P = caller
-	if(!P || !P.client || P.qdeleting) //Not even active.
+	if(!P || !P.ckey || P.qdeleting) //Not even active.
 		return FALSE
 
 	if(!(params["left"] && P.attack_flags & CONTROL_MOD_LEFT || params["right"] && P.attack_flags & CONTROL_MOD_RIGHT) && !max_bursts_to_use) //No trigger.
 		return FALSE
 
-	if(!is_inventory(loc))
-		return FALSE
-	var/obj/hud/inventory/I = loc
-	if(!I.click_flags)
+	var/obj/hud/inventory/I
+	if(is_inventory(loc))
+		I = loc
+	if(!I && loc && loc.loc && is_item(loc) && is_inventory(loc.loc))
+		I = loc.loc
+
+	if(!I || !I.click_flags)
 		return FALSE
 
 	var/list/screen_loc_parsed = parse_screen_loc(P.client.last_params["screen-loc"])
@@ -819,7 +814,6 @@ obj/item/weapon/ranged/proc/shoot(var/mob/caller,var/atom/object,location,params
 
 /obj/item/weapon/ranged/click_on_object_alt(var/mob/caller,var/atom/object,location,control,params)
 
-	if(attachment_undermount)
-		return attachment_undermount.click_on_object_alt(caller,object,location,control,params)
+	if(attachment_undermount) return attachment_undermount.click_on_object_alt(caller,object,location,control,params)
 
 	return FALSE

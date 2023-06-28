@@ -3,7 +3,7 @@
 	dynamic_lighting = TRUE
 
 	health = null //This value is automatically assigned if there is a destruction_turf.
-	health_base = 100
+	health_base = 0 //Set to 0 for no health.
 
 	var/real_icon
 	var/real_icon_state
@@ -56,6 +56,14 @@
 
 	var/list/linked_attachments //For things like APCs, lights, etc.
 
+	var/obj/effect/tile_wetness/wet_floor_effect
+	var/wet_floor_icon_state = "full"
+
+/turf/simulated/pre_change()
+	. = ..()
+	if(wet_level > 0)
+		add_wet(-wet_level)
+
 /turf/simulated/proc/destroy_attachments(var/delete=TRUE)
 	if(!length(linked_attachments))
 		return FALSE
@@ -103,16 +111,28 @@
 	return ..()
 
 /turf/simulated/proc/get_slip_strength(var/mob/living/L)
-	return (wet_level ? 1 : 0) + (wet_level/100)*slip_factor
+	return (wet_level > 0 ? 1 : 0) + (wet_level/100)*slip_factor
 
 /turf/simulated/proc/add_wet(var/wet_to_add)
 	var/old_wet = wet_level
-	wet_level += wet_to_add
+	wet_level = clamp(wet_to_add + wet_level,0,100)
 	if(old_wet <= 0)
-		SSturf.wet_turfs += src
-	if(wet_level <= 0)
-		overlays.Cut()
-		update_overlays()
+		if(wet_level > 0)
+			SSturf.wet_turfs += src
+			if(!wet_floor_effect)
+				wet_floor_effect = new(src)
+				wet_floor_effect.icon_state = wet_floor_icon_state
+	else
+		if(wet_level <= 0)
+			SSturf.wet_turfs -= src
+			if(wet_floor_effect)
+				QDEL_NULL(wet_floor_effect)
+
+	if(wet_floor_effect)
+		wet_floor_effect.alpha = clamp(100 + (wet_level/100)*155,0,255)
+
+
+
 	return TRUE
 
 /turf/simulated/proc/add_blood_level(var/amount_to_add,var/minimus=0,var/desired_color)
@@ -130,6 +150,14 @@
 
 /turf/simulated/on_destruction(var/damage = TRUE)
 
+	if(destruction_turf == /turf/simulated/openspace)
+		var/turf/T = locate(x,y,z-1)
+		if(!T)
+			QDEL_NULL(health)
+			return FALSE
+		if(T.density || !is_simulated(T)) //Don't break yet!
+			return TRUE
+
 	for(var/obj/effect/temp/impact/I in src.contents)
 		I.alpha = 0
 
@@ -140,17 +168,18 @@
 
 	change_turf(destruction_turf)
 
-
 /turf/simulated/Initialize()
 	var/area/A = loc
-	if(!(A.flags_area & FLAG_AREA_NO_CONSTRUCTION))
+	if(health_base > 0 && !(A.flags_area & FLAG_AREA_NO_CONSTRUCTION))
 		if(!destruction_turf)
-			if(loc && loc.type != src.type && is_floor(loc))
-				destruction_turf = loc.type
-			else if(A.destruction_turf != src.type)
+			if(A.destruction_turf && A.destruction_turf != src.type)
 				destruction_turf = A.destruction_turf
+			else if(SSdmm_suite.map_to_final_destruction_turf[SSdmm_suite.z_level_to_file[z]] && SSdmm_suite.map_to_final_destruction_turf[SSdmm_suite.z_level_to_file[z]] != src.type)
+				destruction_turf = SSdmm_suite.map_to_final_destruction_turf[SSdmm_suite.z_level_to_file[z]]
 		if(destruction_turf)
 			health = /health/turf/
+		else
+			health_base = 0
 	set_exposed(exposed,force=TRUE)
 	return ..()
 
@@ -232,9 +261,16 @@
 		if(!O.under_tile)
 			continue
 		if(desired_exposed)
-			O.invisibility = 0
+			O.invisibility = initial(O.invisibility)
 		else
 			O.invisibility = 101
 
 	return TRUE
 
+/turf/simulated/proc/do_footstep(var/mob/living/source,var/enter=FALSE)
+
+	var/list/returning_footsteps = source.get_footsteps(footstep ? list(footstep) : list(),enter)
+	if(length(returning_footsteps))
+		return source.handle_footsteps(src,returning_footsteps,enter)
+
+	return FALSE

@@ -4,6 +4,8 @@
 	desc_extended = "A magical gem filled with pure arcane energy that gives the user the ability to cast spells. Can be augmented onto wands. This one shoots a fast moving ice crystal that pierces."
 	icon_state = "damage"
 
+	company_type = "Ashwalkers"
+
 	shoot_delay = 8
 
 	bullet_count = 1
@@ -23,8 +25,10 @@
 /obj/item/weapon/ranged/spellgem/fire_spear
 	name = "fire spear spell gem"
 	desc = "The source of all magic."
-	desc_extended = "A magical gem filled with pure arcane energy that gives the user the ability to cast spells. Can be augmented onto wands. This one shoots a fast moving fire crystal that pierces."
+	desc_extended = "A magical gem filled with pure arcane energy that gives the user the ability to cast spells. Can be augmented onto wands. This one shoots a fast moving accurate fire crystal can pierce."
 	icon_state = "damage"
+
+	company_type = "Ashwalkers"
 
 	shoot_delay = 8
 

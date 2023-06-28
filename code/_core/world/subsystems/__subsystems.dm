@@ -16,16 +16,15 @@
 	var/overtime_count = 0
 	var/overtime_max = 10
 
-	var/last_run_duration = 0
-	var/total_run_duration = 0
-
 	var/use_time_dialation = TRUE
 
 	var/initialized = FALSE
 	var/generated = FALSE
 	var/finalized = FALSE
 
-	var/preloop = FALSE
+	var/run_failures = 0
+
+	var/bypass_single_life_limit = FALSE
 
 /subsystem/proc/Initialize()
 	if(initialized)
@@ -51,7 +50,10 @@
 
 
 /subsystem/proc/unclog(var/mob/caller)
-	broadcast_to_clients("SHITTERS CLOGGED: Subsystem [name] has been restarted by [caller.ckey].")
+	if(caller.ckey)
+		broadcast_to_clients("SHITTERS CLOGGED: Subsystem [name] has been restarted by [caller.ckey].")
+	else
+		broadcast_to_clients("SHITTERS CLOGGED: Subsystem [name] has been restarted automatically by the server's failsafe.")
 	return TRUE
 
 /subsystem/New(var/desired_loc)

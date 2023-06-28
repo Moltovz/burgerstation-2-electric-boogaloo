@@ -1,7 +1,7 @@
 obj/structure/interactive/chair
 	name = "chair"
 	desc = "You will sit in this. By will or by force."
-	desc_extended = "A chair is a peice of furniture with a raised surface supported by legs, commonly used to seat a single person. Buckling is automatic and will be attempted upon walking over something you can buckle into."
+	desc_extended = "A chair is a piece of furniture with a raised surface supported by legs, commonly used to seat a single person. Buckling is automatic and will be attempted upon walking over something you can buckle into."
 	icon = 'icons/obj/structure/chairs.dmi'
 	icon_state = "chair"
 
@@ -17,7 +17,7 @@ obj/structure/interactive/chair/update_overlays()
 	if(armrest)
 		var/image/I = new/image(icon,"[icon_state]_armrest")
 		I.appearance_flags = src.appearance_flags
-		I.plane = PLANE_MOB
+		I.plane = PLANE_MOVABLE
 		I.layer = LAYER_MOB_ABOVE + 1
 		add_overlay(I)
 
@@ -25,20 +25,21 @@ obj/structure/interactive/chair/Finalize()
 	. = ..()
 	if(armrest)
 		update_sprite()
+	set_dir(dir,TRUE)
 
 obj/structure/interactive/chair/set_dir(var/desired_dir,var/force = FALSE)
 
 	. = ..()
 
-	if(.)
+	if(. || force)
 		if(dir == NORTH)
-			plane = PLANE_MOB
+			plane = PLANE_MOVABLE
 			layer = LAYER_MOB_ABOVE
 		else
 			plane = initial(plane)
 
 
-obj/structure/interactive/chair/Crossed(atom/movable/O)
+obj/structure/interactive/chair/Crossed(atom/movable/O,atom/OldLoc)
 
 	. = ..()
 
@@ -81,7 +82,7 @@ obj/structure/interactive/chair/stool/bar
 obj/structure/interactive/chair/wood
 	name = "wooden chair"
 	desc = "You will sit in this. By will or by force."
-	desc_extended = "A chair is a peice of furniture with a raised surface supported by legs, commonly used to seat a single person."
+	desc_extended = "A chair is a piece of furniture with a raised surface supported by legs, commonly used to seat a single person."
 	icon_state = "wooden_chair"
 
 	bullet_block_chance = 10

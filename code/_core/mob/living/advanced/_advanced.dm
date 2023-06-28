@@ -24,10 +24,6 @@ var/global/list/movement_organs = list(BODY_FOOT_RIGHT,BODY_FOOT_LEFT,BODY_LEG_R
 	var/list/obj/item/worn_objects //List of worn items. For use in an easy read-only list.
 	var/list/obj/item/held_objects //List of held items. For use in an easy read-only list.
 
-	var/obj/item/left_item
-	var/obj/item/right_item
-	var/obj/item/holster_item
-
 	var/list/obj/hud/button/ability/ability_buttons = list()
 
 	health_base = 100
@@ -58,9 +54,8 @@ var/global/list/movement_organs = list(BODY_FOOT_RIGHT,BODY_FOOT_LEFT,BODY_LEG_R
 
 	stun_angle = -90
 
-	var/cqc = ""
-
-	var/list/known_cqc = list()
+	var/cqc_category
+	var/cqc_combo = ""
 
 	size = SIZE_HUMAN
 
@@ -132,11 +127,16 @@ var/global/list/movement_organs = list(BODY_FOOT_RIGHT,BODY_FOOT_LEFT,BODY_LEG_R
 	. = ..()
 
 	if(.) //Dan updating.
-		if(inventories_by_id[BODY_HAND_LEFT_HELD] && left_item && left_item.dan_mode)
+		var/obj/item/left_item = src.inventories_by_id[BODY_HAND_LEFT_HELD]?.get_top_object()
+		if(left_item && left_item.dan_mode)
 			inventories_by_id[BODY_HAND_LEFT_HELD].update_held_icon(left_item)
-		if(inventories_by_id[BODY_HAND_RIGHT_HELD] && right_item && right_item.dan_mode)
+
+		var/obj/item/right_item = src.inventories_by_id[BODY_HAND_RIGHT_HELD]?.get_top_object()
+		if(right_item && right_item.dan_mode)
 			inventories_by_id[BODY_HAND_RIGHT_HELD].update_held_icon(right_item)
-		if(inventories_by_id[BODY_TORSO_OB] && holster_item && holster_item.dan_mode)
+
+		var/obj/item/holster_item = src.inventories_by_id[BODY_TORSO_OB]?.get_top_object()
+		if(holster_item && holster_item.dan_mode)
 			inventories_by_id[BODY_TORSO_OB].update_held_icon(holster_item)
 
 /mob/living/advanced/New(loc,desired_client,desired_level_multiplier)
@@ -198,9 +198,20 @@ mob/living/advanced/Login()
 	add_overlay_tracked("handcuffs", desired_icon = 'icons/mob/living/advanced/overlays/handcuffs.dmi', desired_icon_state = "none", desired_layer = 100)
 
 /mob/living/advanced/Finalize()
+
 	. = ..()
+
 	if(loadout) equip_loadout(loadout)
 	update_items(force=TRUE)
+
+	if(species)
+		var/species/S = SPECIES(species)
+		if(!src.voice_modifiers)
+			src.voice_modifiers = list()
+		src.voice_modifiers[S] = S::process_accent()
+
+	for(var/k in overlays_assoc)
+		update_overlay_tracked(k,force=TRUE)
 
 /mob/living/advanced/setup_name()
 
@@ -212,14 +223,6 @@ mob/living/advanced/Login()
 	real_name = name
 
 	. = ..()
-
-/mob/living/advanced/proc/change_organ_visual(var/desired_id, var/desired_icon,var/desired_icon_state,var/desired_color,var/desired_blend, var/desired_type,var/desired_layer,var/debug_message)
-	for(var/k in organs)
-		var/obj/item/organ/O = k
-		if(!length(O.additional_blends))
-			continue
-		if(O.additional_blends[desired_id])
-			O.add_blend(desired_id, desired_icon, desired_icon_state, desired_color, desired_blend, desired_type, desired_layer, debug_message)
 
 /mob/living/advanced/can_sprint()
 
@@ -273,13 +276,6 @@ mob/living/advanced/Login()
 /mob/living/advanced/proc/get_held_right()
 	return inventories_by_id[BODY_HAND_RIGHT_HELD]?.get_top_object()
 
-/mob/living/advanced/mod_speech(var/text)
-	var/species/S = SPECIES(species)
-	if(!S)
-		return text
-	text = S.mod_speech(src,text)
-	return ..()
-
 /mob/living/advanced/do_explosion_damage(var/atom/owner,var/atom/source,var/atom/epicenter,var/magnitude,var/desired_loyalty_tag)
 	for(var/i=1,i<=5,i++)
 		var/list/params = list()
@@ -313,3 +309,47 @@ mob/living/advanced/Login()
 	if(O) return O.gib(gib_direction,hard)
 	gibbed = FALSE //Hacky, but it works.
 	return FALSE
+
+
+/mob/living/advanced/proc/make_convincing_corpse(var/damage_organs=TRUE,var/damage_clothing=TRUE,var/bloody_clothing=TRUE,var/place_blood=TRUE)
+
+	if(damage_organs)
+		var/total_loss_limit = (src.health.health_max*0.5)/length(organs)
+		for(var/k in organs)
+			var/obj/item/organ/O = k
+			var/total_loss = RAND_PRECISE(0.25,0.5) * min(total_loss_limit,O.health.health_max) * (1/max(1,O.damage_coefficient))
+			var/brute_loss = total_loss * RAND_PRECISE(0.25,0.75)
+			var/burn_loss = (total_loss - brute_loss) * RAND_PRECISE(0.75,1)
+			var/tox_loss = total_loss - (burn_loss + brute_loss)
+			O.health.adjust_loss_smart(brute = brute_loss, burn = burn_loss, tox = tox_loss)
+			if(O.health.health_current <= 0)
+				O.broken = TRUE
+
+	if(damage_clothing || bloody_clothing)
+		for(var/k in worn_objects)
+			var/obj/item/I = k
+			if(!is_clothing(I))
+				continue
+			if(damage_clothing)
+				I.adjust_quality(rand(-50,-90))
+			if(bloody_clothing)
+				I.set_bloodstain(rand(2,5),"#880000")
+
+	if(place_blood && src.blood_type)
+		var/reagent/R = REAGENT(src.blood_type)
+		var/turf/T = get_turf(src)
+		var/hard_limit = 10
+		for(var/i=1,i<=5,i++)
+			if(!T) break
+			var/obj/effect/cleanable/blood/B = create_blood(/obj/effect/cleanable/blood/splatter,T,R.color,rand(-TILE_SIZE,TILE_SIZE),rand(-TILE_SIZE,TILE_SIZE))
+			if(B) B.enable_chunk_clean = src.enable_chunk_clean
+			if(prob(30))
+				T = get_step(T,pick(NORTH,EAST,SOUTH,WEST))
+				if(prob(20))
+					i -= 1
+			hard_limit--
+			if(hard_limit <= 0)
+				break //Just in case lol
+
+	if(place_blood || damage_organs)
+		src.blood_volume *= RAND_PRECISE(0.5,1)

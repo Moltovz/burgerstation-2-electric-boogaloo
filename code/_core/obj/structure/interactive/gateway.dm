@@ -6,7 +6,7 @@
 	pixel_x = -32
 	pixel_y = -32
 
-	plane = PLANE_OBJ
+	plane = PLANE_MOVABLE
 
 	var/enabled = FALSE
 
@@ -20,13 +20,11 @@
 
 /obj/structure/interactive/gateway/PreDestroy()
 	set_active(FALSE)
-	. = ..()
-
-/obj/structure/interactive/gateway/Destroy()
 	if(linked_gateway)
 		linked_gateway.linked_gateway = null
 		linked_gateway = null
 	. = ..()
+
 
 /obj/structure/interactive/gateway/Initialize()
 	. = ..()
@@ -56,7 +54,7 @@
 		icon_state = "[icon_state]_on"
 
 
-/obj/structure/interactive/gateway/Crossed(atom/movable/O)
+/obj/structure/interactive/gateway/Crossed(atom/movable/O,atom/OldLoc)
 
 	. = ..()
 

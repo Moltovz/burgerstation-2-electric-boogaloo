@@ -8,7 +8,7 @@
 
 	color = "#80CC2A"
 
-	plane = PLANE_OBJ
+	plane = PLANE_MOVABLE
 
 	anchored = TRUE
 
@@ -31,7 +31,7 @@
 
 	var/super = FALSE //Only really applies to walls.
 
-/obj/structure/interactive/blob/Destroy()
+/obj/structure/interactive/blob/PreDestroy()
 
 	if(linked_core)
 		linked_core.linked_walls -= src

@@ -5,7 +5,7 @@
 	icon = 'icons/obj/structure/mountable/browning.dmi'
 	icon_state = "unloaded"
 
-	plane = PLANE_MOB
+	plane = PLANE_MOVABLE
 	layer = LAYER_MOB_ABOVE
 
 	density = TRUE
@@ -137,7 +137,7 @@
 
 
 //taken from chairs, sits down if you move onto it, but only once
-/obj/structure/interactive/mountable/browning/Crossed(atom/movable/O)
+/obj/structure/interactive/mountable/browning/Crossed(atom/movable/O,atom/OldLoc)
 
 	. = ..()
 
@@ -156,7 +156,7 @@
 
 /obj/structure/interactive/mountable/browning/proc/mag_check(var/structure/interactive/mountable/browning/M)
 	if(stored_magazine)
-		if(length(stored_magazine.stored_bullets) < 1)
+		if(length(stored_magazine.get_ammo_count()) < 1)
 			icon_state = "empty"
 		else
 			icon_state = "loaded"
@@ -169,9 +169,12 @@
 //pack 'em up, from turret
 /obj/structure/interactive/mountable/browning/proc/can_pack_up(var/mob/caller)
 
+	if(qdeleting)
+		return FALSE
+
 	INTERACT_CHECK_NO_DELAY(src)
 
-	if(qdeleting || !src.z)
+	if(!src.z)
 		caller.to_chat(span("warning","You can't pack up \the [src.name] here!"))
 		return FALSE
 
@@ -182,11 +185,13 @@
 	caller.visible_message(span("warning","\The [caller.name] packs up \the [src.name]."),span("notice","You pack up \the [src.name]."))
 
 	var/mob/living/advanced/A = caller
+	var/obj/item/right_item = A.inventories_by_id[BODY_HAND_RIGHT_HELD]?.get_top_object()
+	var/obj/item/left_item = A.inventories_by_id[BODY_HAND_LEFT_HELD]?.get_top_object()
 
-	if(istype(A.left_item, /obj/item/browning_handle))
-		A.left_item.drop_item()
-	if(istype(A.right_item, /obj/item/browning_handle))
-		A.right_item.drop_item()
+	if(istype(left_item, /obj/item/browning_handle))
+		left_item.drop_item()
+	if(istype(right_item, /obj/item/browning_handle))
+		right_item.drop_item()
 
 	if(stored_magazine)
 		stored_magazine.drop_item(get_turf(src))
@@ -220,7 +225,7 @@
 /obj/structure/interactive/mountable/browning/get_examine_list(var/mob/examiner)
 	. = ..()
 	if(stored_magazine)
-		. += div("notice","It has a magazine latched on, with [length(stored_magazine.stored_bullets)]/[stored_magazine.bullet_count_max] bullets left.")
+		. += div("notice","It has a magazine latched on, with [stored_magazine.get_ammo_count()]/[stored_magazine.bullet_count_max] bullets left.")
 	else
 		. += div("warning","It is missing a magazine.")
 
@@ -279,8 +284,10 @@
 /obj/structure/interactive/mountable/browning/Uncrossed(atom/movable/O)
 	if(is_advanced(O))
 		var/mob/living/advanced/A = O
-		if(istype(A.left_item, /obj/item/browning_handle))
-			A.left_item.drop_item(get_turf(src))
-		if(istype(A.right_item, /obj/item/browning_handle))
-			A.right_item.drop_item(get_turf(src))
+		var/obj/item/right_item = A.inventories_by_id[BODY_HAND_RIGHT_HELD]?.get_top_object()
+		var/obj/item/left_item = A.inventories_by_id[BODY_HAND_LEFT_HELD]?.get_top_object()
+		if(istype(left_item, /obj/item/browning_handle))
+			left_item.drop_item(get_turf(src))
+		if(istype(right_item, /obj/item/browning_handle))
+			right_item.drop_item(get_turf(src))
 		return ..()

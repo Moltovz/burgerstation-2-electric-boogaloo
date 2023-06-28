@@ -11,6 +11,7 @@
 			found_turf = object.loc
 		if(found_turf)
 			INTERACT_CHECK
+			INTERACT_CHECK_OBJECT
 			INTERACT_DELAY(10)
 			var/result = FALSE
 			var/found_object = FALSE
@@ -220,7 +221,7 @@
 	for(var/k in inventories)
 		var/obj/hud/inventory/I = k
 		for(var/i in I.contents)
-			CHECK_TICK_SAFE(50,FPS_SERVER)
+			CHECK_TICK(50,FPS_SERVER)
 			var/obj/item/I2 = i
 			if(!dump_single_content(caller,I2,target_turf))
 				break
@@ -242,10 +243,7 @@
 		var/obj/hud/inventory/I = src.loc
 		if(!new_location)
 			new_location = get_turf(I.owner)
-		if(I.remove_object(src,new_location,pixel_x_offset,pixel_y_offset,silent))
-			return TRUE
-		else
-			return FALSE
+		return I.remove_object(src,new_location,pixel_x_offset,pixel_y_offset,silent)
 
 	force_move(new_location)
 

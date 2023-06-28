@@ -68,8 +68,6 @@
 
 	var/hostile = TRUE //Set to true if this is a hostile projectile. Set to false if it isn't.
 
-	var/rotate_projectile = TRUE
-
 	anchored = TRUE
 
 	var/penetrations_left = 0 //Uwu
@@ -85,8 +83,15 @@
 
 	var/debug = FALSE
 
-/obj/projectile/Destroy()
+	var/rotate_projectile = TRUE
+
+	var/ignore_living = FALSE //Ignore collisions with living beings.
+
+/obj/projectile/PreDestroy()
 	SSprojectiles.all_projectiles -= src
+	. = ..()
+
+/obj/projectile/Destroy()
 	color = "#000000"
 	owner = null
 	weapon = null
@@ -203,54 +208,58 @@
 
 	var/list/target_score = list() //The higher the object, the higher priority it is to get hit.
 
-	for(var/k in new_loc.contents)
-		var/atom/movable/A = k
-		if(!A.density || A.mouse_opacity <= 0)
-			continue
-		if(is_living(A))
-			var/mob/living/L = A
-			var/score = L.size //Bigger objects get more priority.
+
+	if(new_loc.has_dense_atom)
+		for(var/k in new_loc.contents)
+			var/atom/movable/A = k
+			if(!A.density || A.mouse_opacity <= 0)
+				continue
+			if(is_living(A))
+				var/mob/living/L = A
+				var/score = L.size //Bigger objects get more priority.
+				if(L == target_atom)
+					score = 1000
+				else if(L.horizontal)
+					score *= 0.5
+				target_score[L] = score
+				continue
+			else
+				target_score[A] = A.plane*1000 + A.layer
+
+	if(length(new_loc.old_living))
+		for(var/k in new_loc.old_living)
+			var/mob/living/L = k
+			if(!L.density || L.mouse_opacity <= 0)
+				continue
+			if(L.dead || L.next_move <= 0 || get_dist(L,src) > 1) //Special exceptions for living.
+				continue
+			var/score = L.size*0.5
 			if(L == target_atom)
 				score = 1000
 			else if(L.horizontal)
 				score *= 0.5
 			target_score[L] = score
-			continue
-		else
-			target_score[A] = A.plane*1000 + A.layer
 
-	for(var/k in new_loc.old_living)
-		var/mob/living/L = k
-		if(!L.density || L.mouse_opacity <= 0)
-			continue
-		if(L.dead || L.next_move <= 0 || get_dist(L,src) > 1) //Special exceptions for living.
-			continue
-		var/score = L.size*0.5
-		if(L == target_atom)
-			score = 1000
-		else if(L.horizontal)
-			score *= 0.5
-		target_score[L] = score
+	if(length(target_score))
+		sort_tim(target_score,cmp=/proc/cmp_numeric_dsc,associative=TRUE) //Get the highest.
 
-	sort_tim(target_score,cmp=/proc/cmp_numeric_dsc,associative=TRUE) //Get the highest.
+		for(var/k in target_score)
+			var/mob/living/L = k
+			if(L.projectile_should_collide(src,old_loc,new_loc))
+				if(on_projectile_hit(L,old_loc,new_loc))
+					penetrations_left--
+					if(penetrations_left < 0)
+						return FALSE
+				else
+					break
 
-	for(var/k in target_score)
-		var/mob/living/L = k
-		if(L.projectile_should_collide(src,old_loc,new_loc))
-			if(on_projectile_hit(L,old_loc,new_loc))
-				penetrations_left--
-				if(penetrations_left < 0)
-					return FALSE
-			else
-				break
-
-	if(new_loc.projectile_should_collide(src,old_loc,new_loc) && on_projectile_hit(new_loc,old_loc,new_loc))
+	if(new_loc.density && new_loc.projectile_should_collide(src,old_loc,new_loc) && on_projectile_hit(new_loc,old_loc,new_loc))
 		penetrations_left--
 		if(penetrations_left < 0)
 			return FALSE
 
-	if(hit_target_turf && target_turf == new_loc)
-		on_projectile_hit(new_loc,old_loc,new_loc)
+	if(hit_target_turf && target_turf == old_loc)
+		on_projectile_hit(old_loc,old_loc,new_loc)
 		return FALSE
 
 	if(steps_allowed && steps_allowed <= steps_current)
@@ -273,10 +282,11 @@
 		return FALSE
 
 	if(!start_time) //First time running.
-		var/matrix/M = get_base_transform()
-		var/new_angle = -ATAN2(vel_x,vel_y) + 90
-		M.Turn(new_angle)
-		transform = M
+		if(rotate_projectile)
+			var/matrix/M = get_base_transform()
+			var/new_angle = -ATAN2(vel_x,vel_y) + 90
+			M.Turn(new_angle)
+			transform = M
 	else
 		pixel_x_float_visual += vel_x
 		pixel_y_float_visual += vel_y
@@ -436,26 +446,30 @@
 									pixel_y_float_visual = pixel_y_float_physical
 									pixel_x = CEILING(pixel_x_float_visual,1)
 									pixel_y = CEILING(pixel_y_float_visual,1)
-									var/matrix/M = get_base_transform()
-									var/new_angle = -ATAN2(vel_x,vel_y) + 90
-									M.Turn(new_angle)
-									transform = M
+									if(rotate_projectile)
+										var/matrix/M = get_base_transform()
+										var/new_angle = -ATAN2(vel_x,vel_y) + 90
+										M.Turn(new_angle)
+										transform = M
 									. = FALSE
 
 									if(length(DT.impact_sounds))
 										play_sound(pick(DT.impact_sounds),T,range_max=VIEW_RANGE,volume=50)
 
 	if(impact_effect_turf && is_turf(hit_atom))
-		new impact_effect_turf(hit_atom,SECONDS_TO_DECISECONDS(60),clamp((shoot_x-16)*3,-20,20),clamp((shoot_y-16)*3,-20,20),bullet_color)
+		new impact_effect_turf(hit_atom,SECONDS_TO_DECISECONDS(60),clamp((shoot_x-16)*2,-20,20),clamp((shoot_y-16)*2,-20,20),bullet_color)
 
 	else if(impact_effect_movable && ismovable(hit_atom))
 		new impact_effect_movable(get_turf(hit_atom),SECONDS_TO_DECISECONDS(5),0,0,bullet_color)
 
 	weapon.on_projectile_hit(src,hit_atom,old_loc,new_loc)
+	hit_atom.on_projectile_hit(src,old_loc,new_loc)
 
 	return .
 
 /obj/projectile/get_inaccuracy(var/atom/source,var/atom/target,var/inaccuracy_modifier=1)
+	if(!source || !target || source.qdeleting || target.qdeleting)
+		return 100
 	if(inaccuracy_modifier <= 0)
 		return 0
 	if(is_living(source))

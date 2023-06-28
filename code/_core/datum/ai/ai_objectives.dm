@@ -44,7 +44,7 @@
 	var/atom/old_attack = objective_attack
 
 	if(old_attack && old_attack == A)
-		set_alert_level(ALERT_LEVEL_COMBAT,A,A)
+		set_alert_level(ALERT_LEVEL_COMBAT,A)
 		return FALSE
 
 	if(is_player(old_attack) && ai_attacking_players[old_attack])
@@ -59,7 +59,7 @@
 			return FALSE
 		frustration_attack = 0
 		set_active(TRUE)
-		set_alert_level(ALERT_LEVEL_COMBAT,A,A)
+		set_alert_level(ALERT_LEVEL_COMBAT,A)
 		objective_attack = A
 		if(owner.boss && is_player(A))
 			owner.add_player_to_boss(A)
@@ -76,7 +76,7 @@
 	else if(istype(A))
 		frustration_attack = 0
 		set_active(TRUE)
-		set_alert_level(ALERT_LEVEL_COMBAT,A,A)
+		set_alert_level(ALERT_LEVEL_COMBAT,A)
 		objective_attack = A
 		owner.selected_intent = INTENT_HARM
 		owner.update_intent()
@@ -93,51 +93,48 @@
 		var/ai/LAI = k
 		LAI.set_objective(null)
 
-	if(!owner.dead && old_attack && !old_attack.qdeleting && is_living(old_attack))
-		var/mob/living/L2 = old_attack
-		if(L2.dead)
-			try_investigate(L2)
-			return TRUE
-
 	return TRUE
 
 /ai/proc/handle_current_objectives(var/tick_rate)
 
-	if(objective_attack.qdeleting || !objective_attack.health)
+	if(objective_attack.qdeleting || !objective_attack.health) //Object destroyed.
 		set_objective(null)
-		return TRUE
+		return FALSE
 
 	if(get_dist(owner,objective_attack) > attack_distance_max) //Too far away.
 		frustration_attack += tick_rate
-	else
-		frustration_attack = 0
 
 	if(is_living(objective_attack))
-		if(!should_attack_mob(objective_attack,FALSE))
+		var/mob/living/L = objective_attack
+		last_combat_location = get_turf(objective_attack)
+		if(!should_attack_mob(L,FALSE))
 			set_objective(null)
 			return TRUE
-		last_combat_location = get_turf(objective_attack)
 		var/detection_level = get_detection_level(objective_attack,view_check=TRUE)
-		if(detection_level <= 0) //Gone completely.
+		if(detection_level <= 0) //Gone like the wind.
 			set_objective(null)
+			return TRUE
 		else if(detection_level <= 0.25) //Basically out of combat, but not yet
 			frustration_attack += tick_rate
-		else
-			frustration_attack = 0
 		return TRUE
+
+	//Non-living stuff here.
 
 	if(!objective_attack.density) //Object is no longer dense.
 		set_objective(null)
-		return TRUE
+		return FALSE
 
 	if(is_turf(objective_attack))
-		if(objective_attack.Enter(owner)) //No reason to attack the turf.
+		var/turf/T = objective_attack
+		if(!T.has_dense_atom || T.Enter(owner)) //No reason to attack the turf if it's fine now.
 			set_objective(null)
-			return TRUE
+			return FALSE
 	else
-		if(objective_attack.health.health_current <= 0)
+		if(objective_attack.health.health_current <= 0) //Object destroyed.
 			set_objective(null)
-			return TRUE
+			return FALSE
+
+	return TRUE
 
 /ai/proc/find_new_objectives(var/tick_rate,var/bonus_sight=FALSE)
 
@@ -165,7 +162,7 @@
 
 	if(best_target) //We found a new target!
 		if(best_target == objective_attack) //Our best target is currently the one we're still attacking.
-			set_alert_level(ALERT_LEVEL_COMBAT,best_target,best_target)
+			set_alert_level(ALERT_LEVEL_COMBAT,best_target)
 			return TRUE
 
 		if(best_detection_value < 0.5) //Our best target is someone new outside combat detection range.
@@ -186,37 +183,34 @@
 	//Can't find any living beings to shoot.
 
 	//Path to last combat location, if it exists.
-	if(last_combat_location && !length(astar_path_current))
-		set_path_fallback(last_combat_location)
+	if(last_combat_location)
+		try_investigate(last_combat_location,force_if_on_cooldown=TRUE)
 		last_combat_location = null
 		return TRUE
 
 	//Find an obstacle to shoot.
-	if(shoot_obstacles && length(obstacles))
+	if(attack_obstacles && length(obstacles))
 		var/atom/closest_obstacle
 		var/best_distance = INFINITY
 		var/view_range = get_view_range()
 		for(var/k in obstacles)
 			var/atom/A = k
-			if(A.qdeleting)
+			if(!A || A.qdeleting)
 				obstacles -= k
 				continue
 			if(is_turf(A))
-				if(A.Enter(owner,owner.loc))
+				if(!A.density || A.Enter(owner,owner.loc))
 					obstacles -= k
 					continue
 			if(ismovable(A))
-				if(A.Cross(owner,owner.loc))
+				if(!A.density || A.Cross(owner,owner.loc))
 					obstacles -= k
 					continue
 			var/distance_check = get_dist(owner,A)
 			if(distance_check <= view_range && (!closest_obstacle || distance_check < best_distance))
 				closest_obstacle = A
 		if(closest_obstacle)
-			if(reaction_time)
-				CALLBACK("set_new_objective_\ref[src]",reaction_time,src,src::set_objective(),closest_obstacle)
-			else
-				set_objective(closest_obstacle)
+			set_objective(closest_obstacle)
 
 	return TRUE
 
@@ -249,7 +243,10 @@
 	if(range_to_use <= 0)
 		return .
 
-	for(var/mob/living/L in view(range_to_use,owner))
+	for(var/k in hearers(range_to_use,owner))
+		var/mob/living/L = k
+		if(!is_living(L))
+			continue
 		if(!should_attack_mob(L))
 			continue
 		var/detection_level = get_detection_level(L,view_check=FALSE,bonus_sight=bonus_sight)

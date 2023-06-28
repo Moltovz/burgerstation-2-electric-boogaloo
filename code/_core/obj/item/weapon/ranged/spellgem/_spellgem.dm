@@ -30,7 +30,8 @@
 
 /obj/item/weapon/ranged/spellgem/get_base_value()
 	. = ..()
-	. *= 1 - (spread_per_shot/360)
+	. *= 1 - min(0.5,spread_per_shot/180)
+	. = CEILING(.,1)
 
 /obj/item/weapon/ranged/spellgem/proc/get_base_mana_cost()
 	if(mana_cost_override)
@@ -51,38 +52,24 @@
 
 	var/obj/item/weapon/ranged/wand/W = src.loc
 
-	var/list/modifier_count = list()
-
 	for(var/g in W.socketed_supportgems)
 		var/obj/item/supportgem/G = g
 		for(var/support_type in G.support_stats)
 			var/support_value = G.support_stats[support_type]
-			if(isnum(support_value))
-				attachment_stats[support_type] += support_value
-				modifier_count[support_type] += 1
-			else
+			if(!attachment_stats[support_type] || !isnum(support_value))
 				attachment_stats[support_type] = support_value
+			else
+				attachment_stats[support_type] += support_value
 
-	for(var/support_type in modifier_count)
-		var/support_value = modifier_count[support_type]
-		if(!support_value)
-			log_error("Warning: Support value of [support_type] was [isnum(support_value) ? 0 : "NULL"] for [src.get_debug_name()].")
-			continue
-		if(!isnum(support_value))
-			continue
-		if(modifier_count[support_type] > 1)
-			attachment_stats[support_type] *= (1/(modifier_count[support_type]-((1/3) * modifier_count[support_type])))
-		else
-			attachment_stats[support_type] *= (1/support_value)
-		if(support_type == "bullet_count")
-			attachment_stats[support_type] += modifier_count[support_type]
 
 	if(attachment_stats["mana_cost_multiplier"])
 		attachment_stats["mana_cost_multiplier"] *= W.wand_mana_multiplier
 	else
 		attachment_stats["mana_cost_multiplier"] = W.wand_mana_multiplier
+
 	if(attachment_stats["mana_cost_multiplier"] < 0.25)
 		attachment_stats["mana_cost_multiplier"] = 0.25
+
 	if(attachment_stats["damage_multiplier"])
 		attachment_stats["damage_multiplier"] *= W.wand_damage_multiplier
 	else
@@ -124,7 +111,7 @@
 
 	. = ..()
 
-	if(caller.health)
+	if(. && caller.health)
 		var/final_mana_cost = base_mana_cost
 		if(length(attachment_stats) && attachment_stats["mana_cost_multiplier"])
 			final_mana_cost *= attachment_stats["mana_cost_multiplier"]

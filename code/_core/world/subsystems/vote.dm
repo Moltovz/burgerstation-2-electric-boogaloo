@@ -8,17 +8,16 @@ SUBSYSTEM_DEF(vote)
 
 	var/list/active_votes = list()
 
-	preloop = TRUE
-
 /subsystem/vote/unclog(var/mob/caller)
 
 	for(var/k in active_votes)
 		var/vote/V = k
+		active_votes -= k
+		if(!V || V.qdeleting)
+			continue
 		qdel(V)
 
-	broadcast_to_clients(span("danger","Force ended all active votes."))
-
-	return ..()
+	. = ..()
 
 /subsystem/vote/proc/proces_vote(var/vote/V)
 	if(V.time_to_end > world.time)
@@ -31,10 +30,12 @@ SUBSYSTEM_DEF(vote)
 
 	for(var/k in active_votes)
 		var/vote/V = k
+		if(!V || V.qdeleting)
+			continue
 		if(proces_vote(V) == null)
 			qdel(V)
 			active_votes -= k
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 
 	return TRUE
 

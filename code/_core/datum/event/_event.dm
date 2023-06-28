@@ -38,30 +38,40 @@
 
 
 
-/proc/find_safe_turf_for_event(var/desired_z=1,var/attempts=10)
+/proc/find_safe_turf_for_event(var/desired_z=0,var/attempts=10)
+
+	if(attempts <= 0)
+		return null
+
+	var/offset_to_add = CEILING( (1/attempts)*min(world.maxx,world.maxy)*0.4 , 1)
 
 	var/offset = 0
 
+	if(!desired_z)
+		desired_z = SSdmm_suite.file_to_z_level["maps/_core/mission.dmm"]
+
 	while(attempts > 0)
+
 		attempts--
 
-		var/turf/T = locate(rand(1+offset,world.maxx-offset),rand(1+offset,world.maxy-offset),desired_z)
+		var/rand_x = rand(1+offset,world.maxx-offset)
+		var/rand_y = rand(1+offset,world.maxy-offset)
 
-		if(!T.density && T.is_safe() && T.can_move_to())
-			var/area/A = T.loc
-			if(!(A.flags_area & FLAG_AREA_NO_EVENTS))
-				return T
+		var/turf/T = locate(rand_x,rand_y,desired_z)
 
-		for(var/turf/T2 in range(VIEW_RANGE,T))
-			if(T.density || !T2.is_safe() || !T2.can_move_to())
-				continue
-			var/area/A = T2.loc
-			if(A.flags_area & FLAG_AREA_NO_EVENTS)
-				continue
-			return T2
+		if(T)
+			for(var/turf/T2 in range(VIEW_RANGE,T))
+				if(T2.density || T2.has_dense_atom || !T2.is_safe())
+					continue
+				var/area/A = T2.loc
+				if(A.flags_area & FLAG_AREA_NO_EVENTS)
+					continue
+				return T2
 
-		offset += min(world.maxx,world.maxy)/(attempts*4)
-		offset = FLOOR(offset,1)
+		offset += offset_to_add
+
+	return null
+
 
 
 

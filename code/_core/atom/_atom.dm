@@ -7,7 +7,7 @@
 
 	var/desc_extended
 
-	plane = PLANE_OBJ
+	plane = PLANE_MOVABLE
 
 	density = FALSE //Should always be set to FALSE! Controls if an object should receive a Cross/Uncross/Crossed/Uncrossed proc calls.
 
@@ -211,10 +211,10 @@
 /atom/Uncross(atom/movable/O,atom/newloc)
 	return TRUE
 
-/atom/Crossed(atom/movable/O) //Override default
+/atom/Crossed(atom/movable/O,atom/OldLoc) //Override default
 	return TRUE
 
-/atom/proc/on_listen(var/atom/speaker,var/datum/source,var/text,var/language_text,var/talk_type,var/frequency,var/language=LANGUAGE_BASIC,var/talk_range=TALK_RANGE) //Note that this is sanitized.
+/atom/proc/on_listen(var/atom/speaker,var/datum/source,var/text,var/raw_text,var/language_text,var/talk_type,var/frequency,var/language=LANGUAGE_BASIC,var/talk_range=TALK_RANGE) //Note that this is sanitized.
 	return TRUE
 
 /atom/proc/do_say(var/text_to_say, var/should_sanitize = TRUE, var/talk_type_to_use = TEXT_TALK,var/talk_range=TALK_RANGE,var/language_to_use=null)

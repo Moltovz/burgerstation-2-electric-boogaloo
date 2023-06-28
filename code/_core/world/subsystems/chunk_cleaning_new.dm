@@ -2,7 +2,7 @@ SUBSYSTEM_DEF(chunk)
 	name = "Chunk Subsystem"
 	desc = "Handles chunk cleaning."
 	tick_rate = SECONDS_TO_TICKS(300) //JUST LIKE MINECRAFT
-	priority = SS_ORDER_DELETE
+	priority = SS_ORDER_CHUNK
 
 	tick_usage_max = 25
 
@@ -16,6 +16,11 @@ SUBSYSTEM_DEF(chunk)
 
 	var/list/failed_chunk_count = list()
 	var/list/unclean_chunks = list()
+
+/subsystem/chunk/unclog(var/mob/caller)
+	//Honestly there is literally 0 reason as to why this would fail 3 times in as row.
+	//I can't wait to be proven wrong.
+	. = ..()
 
 /subsystem/chunk/Initialize()
 
@@ -66,37 +71,6 @@ SUBSYSTEM_DEF(chunk)
 	if(world.maxz >= 1)
 		tick_rate = CEILING(tick_rate/world.maxz,1)
 
-	var/total_spawnpoints = 0
-	for(var/k in SSliving.all_living) //Setup spawnpoints for respawning mobs.
-		var/mob/living/L = k
-		if(!is_turf(L.loc))
-			continue
-		var/turf/T = L.loc
-		var/area/A = T.loc
-
-
-		var/chunk/CH = CHUNK(T)
-
-		if(L.ai)
-			CH.ai += L.ai
-
-		if(A.safe_storage)
-			continue
-
-		if(!L.respawn)
-			continue
-
-		if(!is_simulated(T))
-			log_error("Warning: [T] at ([T.x],[T.y],[T.z]) is not a simulated turf and had a mob spawnpoint on it.")
-			continue
-
-		var/obj/marker/mob_spawn/M = new(T,L)
-		M.set_dir(L.random_spawn_dir ? pick(NORTH,EAST,SOUTH,WEST) : L.dir)
-		CH.spawning_markers += M
-		total_spawnpoints++
-
-	log_subsystem(src.name,"Created [total_spawnpoints] mob spawnpoints.")
-
 	return TRUE
 
 /subsystem/chunk/on_life()
@@ -133,6 +107,9 @@ SUBSYSTEM_DEF(chunk)
 
 	for(var/k in chunks_to_process)
 		var/chunk/C = k
+		if(!C || !C.visited_by_player)
+			chunks_to_process -= C
+			continue
 		if(length(C.players))
 			if(length(C.cleanables) >= (CHUNK_SIZE*CHUNK_SIZE)*0.2) //20% concetration
 				failed_chunk_count[C] += 1
@@ -144,10 +121,12 @@ SUBSYSTEM_DEF(chunk)
 			failed_chunk_count -= C
 			unclean_chunks -= C
 
-	log_subsystem(src.name,"Filtered out [old_chunks - length(chunks_to_process)] chunks due to player presence...")
+	log_subsystem(src.name,"Filtered out [old_chunks - length(chunks_to_process)] chunks due to player presence or lack of interaction...")
 
 	for(var/k in chunks_to_process)
 		var/chunk/C = k
+		if(!C)
+			continue
 		if(length(C.players))
 			continue
 		for(var/j in C.cleanables)
@@ -161,14 +140,16 @@ SUBSYSTEM_DEF(chunk)
 				continue //It was moved.
 			if(!A.safe_storage && M.on_chunk_clean())
 				. += 1
-			CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER*10)
+			CHECK_TICK(tick_usage_max,FPS_SERVER*10)
 		for(var/j in C.spawning_markers)
 			var/obj/marker/mob_spawn/MS = j
 			MS.process()
-			CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER*10)
+			CHECK_TICK(tick_usage_max,FPS_SERVER*10)
 
 	for(var/k in unclean_chunks)
 		var/chunk/C = k
+		if(!C)
+			continue
 
 		if(!length(C.nodes))
 			continue

@@ -80,6 +80,8 @@
 
 	layer = 0 //has to be this way
 
+	var/busy = FALSE
+
 /obj/hud/inventory/MouseEntered(location,control,params)
 
 	. = ..()
@@ -105,14 +107,13 @@
 
 	show(FALSE,0)
 
-	update_owner(null) //This proc is custom to /obj/hud/inventory so it won't cause issues.
-
 	. = ..()
+
+	update_owner(null) //This proc is custom to /obj/hud/inventory so it won't cause issues.
 
 /obj/hud/inventory/Destroy()
 	parent_inventory = null
 	child_inventory = null
-	grabbed_object = null
 	. = ..()
 
 
@@ -343,17 +344,17 @@
 		if(debug) log_error("add_object() fail: Item didn't exist!")
 		return FALSE
 
-	if(bypass_checks && max_slots <= 0)
-		if(debug) log_error("add_object() fail: No max slots!")
+	if(I.qdeleting)
+		if(debug) log_error("add_object() fail: Item was qdeleting!")
+		I.drop_item(null)
+		return FALSE
+
+	if(!bypass_checks && busy)
+		if(debug) log_error("add_object() fail: Was busy!")
 		return FALSE
 
 	if(!bypass_checks && !can_slot_object(I,messages))
 		if(debug) log_error("add_object() fail: Could not slot object!")
-		return FALSE
-
-	if(I.qdeleting)
-		if(debug) log_error("add_object() fail: Object was qdeleting!")
-		I.drop_item(null)
 		return FALSE
 
 	var/atom/old_location = I.loc
@@ -362,20 +363,6 @@
 		if(debug) log_error("add_object() fail: Object couldn't be moved!")
 		return FALSE
 
-	I.pre_equip(old_location,src)
-
-	if(owner)
-		I.update_owner(owner)
-		if(is_advanced(owner) && should_add_to_advanced)
-			var/mob/living/advanced/A = owner
-			if(worn)
-				A.worn_objects += I
-				src.initialize_worn_icon(I)
-			else
-				A.held_objects += I
-				src.update_held_icon(I)
-			A.queue_update_items = TRUE
-
 	if(I.loc != src) //Something went wrong.
 		if(!owner)
 			usr.to_chat(span("danger","Inventory glitch detected. Please report this bug on discord. Error Code: 01"))
@@ -383,25 +370,41 @@
 			owner.to_chat(span("danger","Inventory glitch detected. Please report this bug on discord. Error Code: 02"))
 		I.drop_item(get_turf(src))
 		if(debug) log_error("add_object() fail: Inventory glitch!")
-		return TRUE
+		return FALSE
+
+	if(owner)
+		I.update_owner(owner)
+		if(is_advanced(owner) && should_add_to_advanced)
+			var/mob/living/advanced/A = owner
+			if(worn)
+				A.worn_objects += I
+				src.update_worn_icon(I)
+			else
+				A.held_objects += I
+				src.update_held_icon(I)
+			A.queue_update_items = TRUE
+
+	I.pre_equip(old_location,src)
 
 	I.pixel_x = initial(I.pixel_x) + x_offset
 	I.pixel_y = initial(I.pixel_y) + y_offset
 
 	vis_contents += I
-
 	I.layer = LAYER_BASE + length(vis_contents)
 
-	update_stats()
-
 	I.on_equip(old_location,silent)
-	I.update_inventory()
+
+	if(is_item(src.loc))
+		var/obj/item/IL = src.loc
+		IL.update_inventory()
 
 	if(debug) log_error("add_object() success!")
 
+	update_stats()
+
 	return TRUE
 
-/obj/hud/inventory/proc/initialize_worn_icon(var/obj/item/item_to_update)
+/obj/hud/inventory/proc/update_worn_icon(var/obj/item/item_to_update)
 
 	var/mob/living/advanced/A = owner
 
@@ -452,27 +455,29 @@
 	I.pixel_x = initial(I.pixel_x) + pixel_x_offset
 	I.pixel_y = initial(I.pixel_y) + pixel_y_offset
 
-	if(owner)
+	if(owner && !owner.qdeleting)
 		if(is_advanced(owner))
 			var/mob/living/advanced/A = owner
 			I.handle_overlays(A,remove=TRUE)
-			if(!A.qdeleting)
-				if(worn)
-					A.worn_objects -= I
-				else
-					A.held_objects -= I
-				A.queue_update_items = TRUE
-
+			if(worn)
+				A.worn_objects -= I
+			else
+				A.held_objects -= I
+			A.queue_update_items = TRUE
 		I.set_dir(owner.dir)
 
 	vis_contents -= I
 
-	I.layer = LAYER_BASE + I.value / 10000
+	I.on_unequip(src,silent)
+
+	if(is_item(src.loc))
+		var/obj/item/IL = src.loc
+		IL.update_inventory()
+
+	if(is_turf(drop_loc))
+		I.layer = initial(I.layer) + clamp(I.value / 10000,0,0.999)
 
 	update_stats()
-
-	I.on_unequip(src,silent)
-	I.update_inventory()
 
 	return I
 
@@ -535,10 +540,6 @@
 	if(loc && loc == I)
 		return FALSE
 
-	if(max_slots <= 0)
-		log_error("Warning: [src.get_debug_name()] had no slots!")
-		return FALSE
-
 	if(length(contents) >= max_slots)
 		/* TODO: REMAKE
 		if(messages)
@@ -564,17 +565,19 @@
 
 	if(length(item_blacklist))
 		for(var/o in item_blacklist)
-			if(istype(I,o))
-				if(messages && src.loc)
-					owner.to_chat(span("warning","\The [src.loc.name] doesn't seem suitable to hold \the [I.name]!"))
-				return FALSE
+			if(!istype(I,o))
+				continue
+			if(messages && src.loc)
+				owner.to_chat(span("warning","\The [src.loc.name] doesn't seem suitable to hold \the [I.name]!"))
+			return FALSE
 
 	if(length(item_whitelist))
 		var/whitelist_found = FALSE
 		for(var/o in item_whitelist)
-			if(istype(I,o))
-				whitelist_found = TRUE
-				break
+			if(!istype(I,o))
+				continue
+			whitelist_found = TRUE
+			break
 
 		if(!whitelist_found)
 			if(messages && src.loc)
@@ -641,24 +644,3 @@
 		return null
 
 	return contents[content_length]
-
-/* Redundent
-/obj/hud/inventory/get_top_object()
-
-	var/list/found_items = list()
-
-	var/atom/best_atom
-
-	for(var/k in vis_contents)
-		var/atom/A = k
-		if(!best_atom)
-			best_atom = A
-			continue
-		if(A.plane > best_atom.plane)
-			best_atom = A
-			continue
-		if(A.plane == best_atom.plane && A.layer > best_atom.layer)
-			best_atom = A
-			continue
-*/
-

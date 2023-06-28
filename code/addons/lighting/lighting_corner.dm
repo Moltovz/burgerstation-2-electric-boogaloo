@@ -155,7 +155,7 @@ var/global/list/REVERSE_LIGHTING_CORNER_DIAGONAL = list(0, 0, 0, 0, 3, 4, 0, 0, 
 
 	var/turf/T
 	for (var/i in 1 to 4)
-		CHECK_TICK_SAFE(50,FPS_SERVER*10)
+		CHECK_TICK(50,FPS_SERVER*10)
 		// this is ugly as fuck, but it's still more legible than doing this with a macro
 		switch (i)
 			if (1) T = t1
@@ -172,7 +172,7 @@ var/global/list/REVERSE_LIGHTING_CORNER_DIAGONAL = list(0, 0, 0, 0, 3, 4, 0, 0, 
 				SSlighting.overlay_queue += Ov
 
 
-/lighting_corner/Destroy()
+/lighting_corner/PreDestroy()
 	log_error("Some fuck deleted a lighting corner. These shouldn't be deleted.")
 	SSlighting.lighting_corners -= src
 	. = ..()

@@ -14,19 +14,17 @@
 
 	var/last_marker //The last person to name this item. Used for moderation purposes.
 
-	plane = PLANE_ITEM
+	plane = PLANE_MOVABLE
 	layer = LAYER_OBJ_ITEM
 
 	var/vendor_name = null //Name for the vender. Set to null for it to just use the initial name var.
 
 	size = SIZE_0
 	var/weight = 0 //DEPRICATED
-	var/quality = 100
+	var/quality = -1 //-1 means quality isn't used.
 	var/rarity = RARITY_COMMON //Arbitrary Value
 	var/tier = -1 //-1 means not set.
 	var/tier_type
-
-	var/list/material = list() //Stored materials
 
 	damage_type = null
 
@@ -104,8 +102,8 @@
 		'sound/effects/inventory/rustle5.ogg'
 	)
 
-	var/list/grinder_reagents = list() //Reagents that are created if this is processed in a grinder.
-	var/reagent_count             //"Fake" amount of reagents, used for calculations
+	var/grinder_reagent //The reagent created if this object is grinded in a grinder.
+	var/grinder_reagent_amount //The amount to create.
 
 	var/flags_tool = FLAG_TOOL_NONE
 	var/tool_time = SECONDS_TO_DECISECONDS(5)
@@ -217,27 +215,6 @@
 
 	. = ..()
 
-var/global/list/rarity_to_prob = list(
-	RARITY_COMMON = 80,
-	RARITY_UNCOMMON = 20,
-	RARITY_RARE = 4,
-	RARITY_MYTHICAL = 1
-)
-
-var/global/list/rarity_to_mul = list(
-	RARITY_COMMON = 1,
-	RARITY_UNCOMMON = 2,
-	RARITY_RARE = 3,
-	RARITY_MYTHICAL = 4
-)
-
-/*
-/obj/item/proc/generate_rarity() //Only called when loot is spawned. Not in shops or other means.
-	if(rarity == RARITY_COMMON) rarity = pickweight(rarity_to_prob)
-	if(uses_until_condition_fall > 0) quality += (rarity_to_mul[rarity]-1)*10
-	return TRUE
-*/
-
 /obj/item/proc/use_condition(var/amount_to_use=1)
 
 	if(!uses_until_condition_fall)
@@ -253,7 +230,7 @@ var/global/list/rarity_to_mul = list(
 
 	return TRUE
 
-/obj/item/Crossed(atom/movable/O)
+/obj/item/Crossed(atom/movable/O,atom/OldLoc)
 	return TRUE
 
 /obj/item/Cross(atom/movable/O,atom/oldloc)
@@ -269,70 +246,17 @@ var/global/list/rarity_to_mul = list(
 		crafting_id = src.type
 
 	if(is_turf(loc))
-		layer = LAYER_BASE + value / 10000
+		layer = initial(layer) + clamp(value / 10000,0,0.999)
 
 /obj/item/proc/get_damage_icon_number(var/desired_quality = quality)
+	if(quality == -1)
+		return 0
 	return FLOOR(clamp( (100 - quality) / (100/5),0,5 ),1)
 
-/obj/item/initialize_worn_blends(var/desired_icon_state)
-
-	if(length(polymorphs))
-		var/icon/initial_icon = initial(icon)
-		var/layer_mod = 0
-		for(var/polymorph_name in polymorphs)
-			var/polymorph_color = polymorphs[polymorph_name]
-			add_blend(
-				"polymorph_[polymorph_name]",
-				desired_icon = initial_icon,
-				desired_icon_state = "[desired_icon_state]_[polymorph_name]",
-				desired_color = polymorph_color,
-				desired_blend = ICON_OVERLAY,
-				desired_type = ICON_BLEND_OVERLAY,
-				desired_should_save = TRUE,
-				desired_layer = worn_layer + (layer_mod * 0.001)
-			)
-			layer_mod++
-
-	if(enable_blood_stains)
-		add_blend(
-			"bloodstain",
-			desired_icon = 'icons/mob/living/advanced/overlays/blood_overlay.dmi',
-			desired_icon_state = blood_stain_intensity ? "[CEILING(blood_stain_intensity,1)]" : null,
-			desired_color = blood_stain_color,
-			desired_blend = ICON_ADD,
-			desired_type = ICON_BLEND_MASK,
-			desired_should_save = FALSE,
-			desired_layer = worn_layer + 0.011
-		)
-
-	if(enable_damage_overlay)
-		var/desired_damage_num = get_damage_icon_number()
-		add_blend(
-			"damage_overlay_noise",
-			desired_icon = 'icons/mob/living/advanced/overlays/damage_clothing.dmi',
-			desired_icon_state = desired_damage_num ? "[desired_damage_num]" : null,
-			desired_blend = ICON_MULTIPLY,
-			desired_type = ICON_BLEND_MASK,
-			desired_should_save = FALSE,
-			desired_layer = worn_layer + 0.012
-		)
-
-	if(enable_torn_overlay)
-		var/desired_damage_num = max(0,get_damage_icon_number() - 1)
-		add_blend(
-			"damage_overlay",
-			desired_icon = 'icons/mob/living/advanced/overlays/damage_overlay.dmi',
-			desired_icon_state = desired_damage_num ? "[desired_damage_num]" : null,
-			desired_blend = ICON_OVERLAY,
-			desired_type = ICON_BLEND_CUT,
-			desired_should_save = FALSE,
-			desired_layer = worn_layer + 0.013
-		)
-
-	. = ..()
-
 /obj/item/get_base_value()
-	return initial(value) * amount * price_multiplier * (0.5 + 0.5*clamp(quality/100,0.25,1.5))
+	. = initial(value) * amount * price_multiplier
+	if(quality != -1)
+		. *= (0.5 + 0.5*clamp(quality/100,0.25,1.5))
 
 /obj/item/get_inaccuracy(var/atom/source,var/atom/target,var/inaccuracy_modifier=1) //Only applies to melee and unarmed. For ranged, see /obj/item/weapon/ranged/proc/get_bullet_inaccuracy(var/mob/living/L,var/atom/target)
 	if(inaccuracy_modifier <= 0)
@@ -422,7 +346,7 @@ var/global/list/rarity_to_mul = list(
 				did_add = TRUE
 
 	if(did_add)
-		if(object.qdeleting)
+		if(object.qdeleting) //Means that the stacks were likely transfered to another object.
 			if(caller && enable_messages)
 				caller.to_chat(span("notice","You stuff \the [object.name] in \the [src.name]."))
 			return TRUE
@@ -531,28 +455,32 @@ var/global/list/rarity_to_mul = list(
 	if(contraband)
 		. += div("bad bold center","CONTRABAND")
 
-	if(quality <= 0)
-		. += div("rarity bad","<b>Quality</b>: BROKEN")
-	else if(quality >= 200)
-		. += div("rarity legendary","<b>Quality</b>: [FLOOR(quality,1)]%")
-	else if(quality > 100)
-		. += div("rarity good","<b>Quality</b>: [FLOOR(quality,1)]%")
-	else if(quality <= 60)
-		. += div("rarity bad","<b>Quality</b>: [FLOOR(quality,1)]%")
-	else
-		. += div("rarity common","<b>Quality</b>: [FLOOR(quality,1)]%")
+	if(quality != -1)
+		if(quality <= 0)
+			. += div("rarity bad","<b>Quality</b>: BROKEN")
+		else if(quality >= 200)
+			. += div("rarity legendary","<b>Quality</b>: [FLOOR(quality,1)]%")
+		else if(quality > 100)
+			. += div("rarity good","<b>Quality</b>: [FLOOR(quality,1)]%")
+		else if(quality <= 60)
+			. += div("rarity bad","<b>Quality</b>: [FLOOR(quality,1)]%")
+		else
+			. += div("rarity common","<b>Quality</b>: [FLOOR(quality,1)]%")
 
 	if(luck < 50)
 		. += div("rarity bad","<b>Luck</b>: -[50 - luck]")
 	else if(luck > 50)
 		. += div("rarity good","<b>Luck</b>: +[luck-50]")
 
-	. += div("rarity","Base Value: [get_base_value()]cr.")
+	. += div("rarity","Base Value: [get_display_value()]cr.")
 	. += div("weightsize","Size: [size], Weight: [weight]")
 
 	if(amount > 1) . += div("weightsize","Quantity: [amount].")
 	. += div("examine_description","\"[src.desc]\"")
 	. += div("examine_description_long",src.desc_extended)
+
+/obj/item/proc/get_display_value()
+	return get_base_value()
 
 /obj/item/get_examine_details_list(var/mob/examiner)
 	. = ..()
@@ -766,18 +694,21 @@ var/global/list/rarity_to_mul = list(
 
 	var/mob/living/L = target
 
+	if(L.dead)
+		caller.to_chat(span("warning","\The [L.name] is dead!"))
+		return FALSE
+
+	if(!reagents.volume_current)
+		caller.to_chat(span("notice","\The [src.name] is empty!"))
+		return FALSE
+
 	if(is_living(caller))
 		var/mob/living/C = caller
 		if(C.attack_flags & CONTROL_MOD_DISARM) //Splash
 			return FALSE
-		if(reagents.contains_lethal && L != C)
-			if(!allow_hostile_action(C.loyalty_tag,L))
-				C.to_chat(span("warning","Your loyalties prevent you from feeding dangerous reagents to your allies!"))
-				return FALSE
-
-	if(L.dead)
-		caller.to_chat(span("warning","\The [L.name] is dead!"))
-		return FALSE
+		if(reagents.contains_lethal && L != C && !allow_hostile_action(C.loyalty_tag,L))
+			C.to_chat(span("warning","Your loyalties prevent you from feeding dangerous reagents to your allies!"))
+			return FALSE
 
 	return TRUE
 
@@ -811,7 +742,7 @@ var/global/list/rarity_to_mul = list(
 	return TRUE
 
 /obj/item/can_attack(var/atom/attacker,var/atom/victim,var/atom/weapon,var/params,var/damagetype/damage_type)
-	if(quality <= 0)
+	if(quality != -1 && quality <= 0)
 		if(ismob(attacker))
 			var/mob/M = attacker
 			M.to_chat(span("danger","\The [src.name] is broken!"))
@@ -872,11 +803,15 @@ var/global/list/rarity_to_mul = list(
 
 	. = ..()
 
-	for(var/polymorph_name in polymorphs)
-		var/polymorph_color = polymorphs[polymorph_name]
-		var/image/I = new/image(initial(icon),"[icon_state]_[polymorph_name]")
-		I.color = polymorph_color
-		add_overlay(I)
+	if(length(polymorphs))
+		var/initial_icon = initial(icon)
+		var/initial_icon_state = initial(icon_state)
+
+		for(var/polymorph_name in polymorphs)
+			var/polymorph_color = polymorphs[polymorph_name]
+			var/image/I = new/image(initial_icon,"[initial_icon_state]_[polymorph_name]")
+			I.color = polymorph_color
+			add_overlay(I)
 
 	if(enable_blood_stains && blood_stain_intensity > 0 && blood_stain_color)
 		var/image/I = new/image('icons/mob/living/advanced/overlays/blood_overlay.dmi',"[CEILING(blood_stain_intensity,1)]")
@@ -887,21 +822,25 @@ var/global/list/rarity_to_mul = list(
 
 
 /obj/item/proc/get_quality_bonus(var/minimum=0.5,var/maximum=2,var/threshold=60)
-	var/quality_mod_to_use
-	if(quality < 100)
-		quality_mod_to_use = min(1,quality/threshold) //Start failing only below the threshold.
-	else
-		quality_mod_to_use = quality/100
-	quality_mod_to_use = FLOOR(quality_mod_to_use,0.01)
+	var/quality_mod_to_use = 1
+	if(quality != -1)
+		if(quality < 100)
+			quality_mod_to_use = min(1,quality/threshold) //Start failing only below the threshold.
+		else
+			quality_mod_to_use = quality/100
+		quality_mod_to_use = FLOOR(quality_mod_to_use,0.01)
 	return min(minimum + quality_mod_to_use*(1-minimum),maximum)
 
 /obj/item/proc/adjust_quality(var/quality_to_add=0)
 
+	if(quality == -1)
+		return FALSE
+
+	if(quality >= 200) //Cannot add or remove quality.
+		return TRUE
+
 	var/original_quality = quality
 	var/original_damage_num = get_damage_icon_number()
-
-	if (quality >= 200)
-		return TRUE
 
 	quality = FLOOR(quality + quality_to_add,0.01)
 
@@ -919,8 +858,6 @@ var/global/list/rarity_to_mul = list(
 
 	return TRUE
 
-
-
 /obj/item/dust(var/atom/source)
 	qdel(src)
 	return TRUE
@@ -928,7 +865,6 @@ var/global/list/rarity_to_mul = list(
 
 /obj/item/proc/negate_damage(var/atom/attacker,var/atom/victim,var/atom/weapon,var/atom/hit_object,var/atom/blamed,var/damage_dealt=0)
 	return FALSE
-
 
 /obj/item/Generate()
 	fill_inventory()
@@ -944,3 +880,4 @@ var/global/list/rarity_to_mul = list(
 			post_fill_inventory(I)
 			add_object_to_src_inventory(null,I,enable_messages=FALSE,bypass=TRUE,silent=TRUE)
 	. = ..()
+

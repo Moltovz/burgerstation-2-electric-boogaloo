@@ -1,7 +1,7 @@
 /obj/structure/interactive/disposals/machine/outlet
 	name = "disposals outlet"
 	desc = "Express delivery!"
-	desc_extended = "Stuff going trough disposals comes out here."
+	desc_extended = "Stuff going through disposals comes out here."
 	icon_state = "outlet"
 
 	collision_flags = FLAG_COLLISION_WALKING
@@ -22,7 +22,7 @@
 
 	var/turf/T = get_turf(src)
 	if(T)
-		play_sound('sound/effects/disposals/hiss.ogg',T)
+		play_sound('sound/effects/disposals/hiss.ogg',T) //Dogshit usage of destroy but w/e
 
 	. = ..()
 
@@ -35,6 +35,9 @@
 		var/list/throw_offset = direction_to_pixel_offset(dir)
 
 		for(var/atom/movable/M in C.contents)
+
+			if(!M)
+				continue
 
 			if(M.qdeleting)
 				log_error("Warning: [M.get_debug_name()] was qdeleting in disposals.")
@@ -59,6 +62,7 @@
 			M.force_move(get_step(src,dir))
 			var/obj/projectile/thrown/P = M.throw_self(src,null,null,null,diff_x*throw_velocity,diff_y*throw_velocity)
 			P.steps_allowed = rand(throw_range_min,throw_range_max)
+			CHECK_TICK(50,FPS_SERVER)
 
 		qdel(C)
 

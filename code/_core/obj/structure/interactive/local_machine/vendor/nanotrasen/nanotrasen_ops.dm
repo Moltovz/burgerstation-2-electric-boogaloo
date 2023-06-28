@@ -31,15 +31,17 @@
 		/obj/item/weapon/ranged/bullet/magazine/rifle/semi,
 		/obj/item/weapon/ranged/bullet/magazine/rifle/burst,
 		/obj/item/weapon/ranged/bullet/magazine/rifle/standard,
+		/obj/item/weapon/ranged/energy/rifle/xray,
 
 		//3 heavy weapons (lmgs, sniper rifles, rocket launchers)
+		/obj/item/weapon/ranged/energy/iongun,
 		/obj/item/weapon/ranged/bullet/magazine/rifle/advanced,
-		/obj/item/weapon/ranged/bullet/magazine/rifle/lmg_nt_light,
+		/obj/item/weapon/ranged/bullet/magazine/rifle/lmg_nt,
 		/obj/item/weapon/ranged/bullet/magazine/rifle/sniper_127,
 
 		//3 grenades or equipment
-		/obj/item/grenade/timed/explosive_large,
-		/obj/item/grenade/landmine/proximity/explosive,
+		/obj/item/grenade/device/large/timed/explosive_large,
+		/obj/item/grenade/device/landmine/proximity/explosive,
 		/obj/item/weapon/ranged/thrown/kunai
 
 	)
@@ -73,7 +75,7 @@
 		/obj/item/magazine/rifle_556/ap,
 		/obj/item/magazine/sniper_308/nato,
 		/obj/item/magazine/sniper_308/nato/ap,
-		/obj/item/magazine/lmg_556,
+		/obj/item/magazine/lmg_762,
 		/obj/item/magazine/sniper_127
 	)
 
@@ -109,6 +111,7 @@
 		//Helmets and masks
 		/obj/item/clothing/head/helmet/polymorphic/reinforced/ntops,
 		/obj/item/clothing/head/hat/skimask/black,
+		/obj/item/clothing/head/hat/skimask/tactical/black,
 		/obj/item/clothing/mask/gas/poly/nt_ops,
 
 		//Armor
@@ -128,7 +131,8 @@
 
 		//Bonus
 		/obj/item/clothing/overwear/armor/nanotrasen/nt_ops,
-		/obj/item/clothing/head/helmet/full/nanotrasen/nt_ops
+		/obj/item/clothing/head/helmet/full/nanotrasen/nt_ops,
+		/obj/item/storage/nanotrasen_elite
 
 	)
 

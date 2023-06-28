@@ -16,6 +16,8 @@ var/global/list/all_typecaches = list()
 #define is_datum(A) istype(A, /datum)
 #define is_atom(A) istype(A,/atom)
 
+#define is_mob(A) istypecache(A,/mob)
+
 #define is_area(A) istypecache(A,/area)
 
 #define is_living(A) istypecache(A,/mob/living/)
@@ -75,3 +77,6 @@ var/global/list/all_typecaches = list()
 #define is_bow(A) istypecache(A,/obj/item/weapon/ranged/bow)
 
 #define is_wand(A) istypecache(A,/obj/item/weapon/ranged/wand)
+
+#define is_material(A) istypecache(A,/obj/item/material)
+

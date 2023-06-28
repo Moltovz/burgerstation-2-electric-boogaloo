@@ -31,7 +31,7 @@
 		. += 10000
 
 
-/obj/item/ghost_box/Crossed(atom/movable/O)
+/obj/item/ghost_box/Crossed(atom/movable/O,atom/OldLoc)
 
 	if(stored_ghost)
 		return ..()
@@ -54,7 +54,7 @@
 	INTERACT_DELAY(1)
 
 	if(stored_ghost)
-		caller.to_chat(span("warning","\The [src.name] is locked!."))
+		caller.to_chat(span("warning","\The [src.name] is locked!"))
 	else if(active)
 		caller.to_chat(span("notice","You turn off \the [src.name]."))
 		active = FALSE

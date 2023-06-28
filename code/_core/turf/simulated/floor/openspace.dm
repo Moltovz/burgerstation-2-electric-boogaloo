@@ -17,7 +17,13 @@
 
 	plane = PLANE_FLOOR_BELOW
 
-/turf/simulated/openspace/Initialize()
+	color = COLOR_GREY
+
+/turf/simulated/openspace/Finalize()
 	. = ..()
 	var/turf/T = locate(x,y,z-1)
 	if(T) vis_contents += T
+
+/turf/simulated/openspace/pre_change()
+	. = ..()
+	vis_contents.Cut()

@@ -4,24 +4,26 @@ var/global/time_dialation = 0
 	set background = TRUE
 	spawn while(SS.tick_rate > 0 && world_state < STATE_SHUTDOWN)
 		if(SS.tick_rate > 0 && SS.overtime_count < SS.overtime_max)
-			if((!SS.preloop || world_state >= STATE_RUNNING) && SS.tick_usage_max > 0 && world.tick_usage > SS.tick_usage_max)
+			if(world_state >= STATE_RUNNING && SS.tick_usage_max > 0 && world.tick_usage > SS.tick_usage_max)
 				SS.overtime_count++
 				sleep(TICK_LAG)
 				continue
 		SS.overtime_count = 0
-		var/start_time = true_time()
 		var/result = SS.on_life()
 		if(result == null)
 			log_error("[SS.name] failed to run properly!")
+			SS.run_failures++
+			if(SS.run_failures >= 3)
+				log_error("[SS.name] failed to run properly for the third time in a row, unclogging...")
+				SS.run_failures = 0
+				SS.unclog()
 			sleep(10)
 			continue
 		else if(result == FALSE || SS.tick_rate <= 0)
 			SS.tick_rate = 0
 			log_subsystem(SS.name,"Shutting down.")
 			break
-		SS.last_run_duration = FLOOR(true_time() - start_time,0.01)
-		if(world_state >= STATE_RUNNING)
-			SS.total_run_duration += SS.last_run_duration
+		SS.run_failures = 0
 
 		var/desired_delay = TICKS_TO_DECISECONDS(SS.tick_rate)
 		if(time_dialation > 1 && SS.use_time_dialation)
@@ -30,6 +32,8 @@ var/global/time_dialation = 0
 			sleep(desired_delay)
 		else
 			sleep(-1)
+		while(world_state <= STATE_INITIALIZING)
+			sleep(10)
 
 /world/proc/subsystem_initialize(var/subsystem/SS)
 	//No background processing. Everything needs to run in order.
@@ -46,9 +50,11 @@ var/global/time_dialation = 0
 			log_subsystem(SS.name,"Initialization took <b style='color:red'>[benchmark_time]</b> seconds.")
 		if(60 to INFINITY)
 			log_subsystem(SS.name,"<b style='color:red'>Initialization took [benchmark_time] seconds.</b>")
-	CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+	CHECK_TICK_HARD
 
 /world/proc/life()
+
+	var/benchmark = true_time()
 
 	world_log("Starting world...")
 
@@ -69,14 +75,19 @@ var/global/time_dialation = 0
 
 	log_subsystem("Subsystem Controller","Created and sorted [length(active_subsystems)] subsystems sorted.")
 
-	var/benchmark = true_time()
+	CHECK_TICK_HARD
 
 	for(var/k in active_subsystems)
 		var/subsystem/SS = k
-		subsystem_initialize(SS)
-		if(!SS.preloop)
+		if(!SS)
+			active_subsystems -= k
+			log_error("FATAL ERROR: There was a subsystem in the active_substyems list that was null!")
 			continue
-		sleep(3)
+		if(SS.qdeleting)
+			active_subsystems -= k
+			log_error("FATAL ERROR: Subsystem [SS.get_debug_name()] was qdeleting!")
+			continue
+		subsystem_initialize(SS)
 		subsystem_life_loop(SS)
 
 	var/final_time_text = "All initializations took <b>[DECISECONDS_TO_SECONDS((true_time() - benchmark))]</b> seconds."
@@ -84,16 +95,7 @@ var/global/time_dialation = 0
 	log_subsystem("Subsystem Controller",final_time_text)
 	log_debug(final_time_text)
 
-	CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
-
-	for(var/k in active_subsystems)
-		var/subsystem/SS = k
-		if(SS.preloop)
-			continue
-		sleep(3)
-		subsystem_life_loop(SS)
-
-	CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+	CHECK_TICK_HARD
 
 	world_state = STATE_RUNNING
 

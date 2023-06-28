@@ -15,6 +15,8 @@
 
 	blood_toxicity_multiplier = 5
 
+	flags_metabolism = REAGENT_METABOLISM_STOMACH | REAGENT_METABOLISM_BLOOD
+
 /reagent/drug/on_metabolize_stomach(var/mob/living/owner,var/reagent_container/container,var/amount_to_metabolize=0,var/starting_volume=0,var/multiplier=1)
 
 	. = ..()
@@ -121,3 +123,23 @@
 	particle_size = 0.7
 
 	status_effect = CONFUSED
+
+
+/reagent/drug/armotol
+	name = "Armo-tol"
+	desc = "An odd chemical that makes you tougher."
+	color = "#2600ff"
+	alpha = 200
+
+	flavor = "steel"
+
+	strength = 25
+	duration_mod = 15
+
+	value = 10
+
+	status_effect = TEMP_ARMOR
+
+	lethal = FALSE
+
+	liquid = 0.6

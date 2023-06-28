@@ -4,7 +4,6 @@
 	icon = 'icons/obj/effects/gabber_death_trap.dmi'
 	icon_state = "active"
 	duration = SECONDS_TO_DECISECONDS(30)
-	damage_type = /damagetype/ranged/magic/magefire
 
 	hazardous = TRUE
 
@@ -41,9 +40,9 @@
 	animate(src,alpha=255,time=5)
 	animate(alpha=200,time=5)
 
-/obj/effect/temp/gabber_death_trap/Crossed(atom/movable/O)
+/obj/effect/temp/gabber_death_trap/Crossed(atom/movable/O,atom/OldLoc)
 	. = ..()
-	if(active && !triggered && !qdeleting)
+	if(active && !triggered && !src.qdeleting)
 		CALLBACK("remove_effect_\ref[src]",SECONDS_TO_DECISECONDS(5),src,/obj/effect/temp/proc/remove_effect)
 		triggered = TRUE
 		icon_state = "triggered"

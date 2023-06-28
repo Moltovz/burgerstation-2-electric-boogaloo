@@ -10,11 +10,14 @@
 	var/atom/old_loc = src.loc
 
 	if(caller && src.loc && is_advanced(src.loc.loc))
-		caller.visible_message(span("notice","\The [caller.name] strips \the [src.name] off of [src.loc.loc]."),span("notice","You strip \the [src.name]."))
+		caller.visible_message(
+			span("notice","\The [caller.name] strips \the [src.name] off of [src.loc.loc]."),
+			span("notice","You strip \the [src.name].")
+		)
 
 	drop_item(get_turf(src))
 
-	if(!src.qdeleting && is_advanced(caller))
+	if(!src.qdeleting && caller && is_advanced(caller))
 		var/mob/living/advanced/A = caller
 		A.put_in_hands(src)
 		A.on_strip(src,old_loc)
@@ -38,7 +41,11 @@
 		if(messages) caller.to_chat(span("warning","That's not there anymore!"))
 		return FALSE
 
+	if(!is_living(caller))
+		return FALSE
+
 	var/mob/living/L = I.owner
+	var/mob/living/CL = caller
 
 	INTERACT_CHECK_OTHER(L)
 
@@ -46,22 +53,33 @@
 		if(messages) caller.to_chat(span("warning","\The [I.name] is on \the [L.name] too securely!"))
 		return FALSE
 
-	if(is_living(caller))
-		var/mob/living/CL = caller
-		if(L.ckey_owner == CL.ckey_owner)
-			if(is_player(L))
-				var/mob/living/advanced/player/P = L
-				if(!P.allow_save)
-					return FALSE
-		else if(!allow_hostile_action(CL.loyalty_tag,L))
+	if(L.ckey_owner == CL.ckey_owner) //Same ckey.
+		if(L.loyalty_tag == CL.loyalty_tag) //Prevents joining as NanoTrasen and giving yourself stuff as antag.
 			return FALSE
+	else
+		if(CL.loyalty_tag == "NanoTrasen")
+			if(!allow_hostile_action(CL.loyalty_tag,L)) //NanoTrasen can only strip enemies.
+				if(messages) caller.to_chat(span("warning","You can't strip allies!"))
+				return FALSE
+		else
+			if(!L.dead) //Others can only strip when dead.
+				if(messages) caller.to_chat(span("warning","You can't strip people who aren't dead!"))
+				return FALSE
+			if(L.loyalty_tag == "NanoTrasen")
+				if(messages) caller.to_chat(span("warning","You refuse to subject yourself to poor-quality NanoTrasen goods!"))
+				return FALSE
 
-	if(!L.dead)
-		if(I.worn)
-			if(messages) caller.to_chat(span("warning","You can't remove clothing from living people!"))
-			return FALSE
-		if(!istype(I,/obj/hud/inventory/organs/groin/pocket) && !L.grabbing_hand)
-			if(messages) caller.to_chat(span("warning","You need a better grip to steal this!"))
-			return FALSE
+	if(L.horizontal) //Can strip someone if they're horizontal.
+		return TRUE
 
-	return TRUE
+	if(is_advanced(L))
+		var/mob/living/advanced/A = L
+		if(A.handcuffed) //Can strip someone if they're handcuffed.
+			return TRUE
+
+	if(!I.worn && L.dir & get_dir(CL,I)) //Allow removing of non-worn items from behind (pickpocketing).
+		return TRUE
+
+	if(messages) caller.to_chat(span("warning","\The [L.name] is not in a position to be stripped!"))
+
+	return FALSE

@@ -83,18 +83,8 @@ menu "menu"
 		category = "Graphics Settings"
 		saved-params = "is-checked"
 	elem 
-		name = "Toggle Smooth &Shadows"
-		command = "toggle-smooth-shadows"
-		category = "Graphics Settings"
-		saved-params = "is-checked"
-	elem 
 		name = "Toggle &Depth"
 		command = "toggle-depth"
-		category = "Graphics Settings"
-		saved-params = "is-checked"
-	elem 
-		name = "Toggle Currency &Bloom"
-		command = "toggle-currency-bloom"
 		category = "Graphics Settings"
 		saved-params = "is-checked"
 	elem 
@@ -132,23 +122,33 @@ menu "menu"
 		category = "Volume"
 		saved-params = "is-checked"
 	elem "dev"
-		name = "Dev"
+		name = "Developer"
 		command = ""
 		saved-params = "is-checked"
-	elem "reboot"
-		name = "&Shutdown"
-		command = "trigger_shutdown"
-		category = "Dev"
+	elem 
+		name = "Toggle &Debug Messages"
+		command = "toggle-debug-messages"
+		category = "Developer"
+		saved-params = "is-checked"
+	elem 
+		name = "Toggle &Admin Messages"
+		command = "toggle-admin-messages"
+		category = "Developer"
 		saved-params = "is-checked"
 	elem "profile"
 		name = "&Profile Server"
 		command = ".profile"
-		category = "Dev"
+		category = "Developer"
 		saved-params = "is-checked"
 	elem 
 		name = "&Host Options..."
 		command = ".host"
-		category = "Dev"
+		category = "Developer"
+		saved-params = "is-checked"
+	elem "reboot"
+		name = "Shutdown Server"
+		command = "trigger_shutdown"
+		category = "Developer"
 		saved-params = "is-checked"
 
 
@@ -159,6 +159,7 @@ window "chat"
 		size = 800x800
 		anchor1 = -1,-1
 		anchor2 = -1,-1
+		background-color = none
 		saved-params = "pos;size;is-minimized;is-maximized"
 		title = "Chat Tabs"
 		titlebar = false
@@ -167,6 +168,8 @@ window "chat"
 		can-minimize = false
 		can-resize = false
 		is-pane = true
+		outer-size = 814x814
+		inner-size = 800x800
 	elem "tab"
 		type = TAB
 		pos = 0,0
@@ -175,8 +178,9 @@ window "chat"
 		anchor2 = 100,100
 		font-family = "Arial Narrow"
 		font-size = 10
+		background-color = none
 		saved-params = ""
-		tabs = "chat_all,chat_say,chat_looc,chat_ooc,chat_combat"
+		tabs = "chat_all,chat_say,chat_looc,chat_ooc,chat_combat,chat_debug"
 		current-tab = "chat_all"
 
 window "chat_all"
@@ -222,6 +226,25 @@ window "chat_combat"
 		can-minimize = false
 		can-resize = false
 		is-pane = true
+	elem "output"
+		type = OUTPUT
+		pos = 0,0
+		size = 800x800
+		anchor1 = 0,0
+		anchor2 = 100,100
+		saved-params = "max-lines"
+
+window "chat_debug"
+	elem "chat_debug"
+		type = MAIN
+		pos = 281,0
+		size = 800x800
+		anchor1 = -1,-1
+		anchor2 = -1,-1
+		saved-params = "pos;size;is-minimized;is-maximized"
+		title = "Debug"
+		is-pane = true
+		can-scroll = vertical
 	elem "output"
 		type = OUTPUT
 		pos = 0,0

@@ -7,7 +7,9 @@
 	icon_state_worn = "worn"
 
 	worn_layer = LAYER_MOB_CLOTHING_MASK
+
 	item_slot = SLOT_FACE
+	item_slot_layer = 3
 
 	can_wear = TRUE
 	can_rename = TRUE
@@ -29,7 +31,7 @@
 
 	damage_type = /damagetype/melee/club/lighter
 
-	size = SIZE_1
+	size = SIZE_0
 
 /obj/item/container/cigarette/clicked_on_by_object(var/mob/caller,var/atom/object,location,control,params)
 	if(!lit)

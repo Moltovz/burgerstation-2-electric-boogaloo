@@ -6,7 +6,6 @@
 	icon_state = "living"
 	damage_type = /damagetype/unarmed/claw/
 
-
 	pixel_x = -16
 
 	value = 1000
@@ -51,6 +50,7 @@
 
 /mob/living/simple/arachnid/Finalize()
 	. = ..()
+	add_status_effect(REST,-1,-2, force = TRUE)
 	update_sprite()
 
 /mob/living/simple/arachnid/post_death()
@@ -68,10 +68,10 @@
 
 	if(dead)
 		icon_state = "dead"
+	else if(has_status_effect(REST))
+		icon_state = "inactive"
 	else if(horizontal)
 		icon_state = "stun"
-	else if(ai && !ai.active)
-		icon_state = "inactive"
 	else
 		icon_state = "living"
 

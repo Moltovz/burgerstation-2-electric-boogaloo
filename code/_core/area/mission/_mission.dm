@@ -9,6 +9,29 @@
 
 	horde_data = "mission"
 
+/area/mission/below
+	name = "\improper Underground"
+	icon_state = "cave"
+
+	weather = null
+	ambient_temperature = T0C + 10
+	cheese_type = /reagent/nutrition/cheese/gruyere
+
+	sunlight_freq = null
+	sunlight_color = null
+
+	interior = TRUE
+	sound_environment = ENVIRONMENT_QUARRY
+	tracks = TRACKS_CAVE
+	random_sounds = list(
+		'sound/ambient/cave_1.ogg',
+		'sound/ambient/cave_2.ogg',
+	)
+
+	horde_data = /horde_data/cave
+
+	allow_climbing = TRUE
+
 /area/mission/desert
 	name = "\improper Cliffside Sea Desert"
 	icon_state = "desert"
@@ -17,12 +40,14 @@
 	ambient_temperature = T0C + 80
 	cheese_type = /reagent/nutrition/cheese/kadchgall
 
-	sunlight_freq = 8
+	sunlight_freq = 16
 	sunlight_color = "#724C2B"
 
 	sound_environment = ENVIRONMENT_PLAIN
 
 	horde_data = /horde_data/desert
+
+	dynamic_rock_gen_turf = /turf/simulated/wall/rock/desert
 
 /area/mission/snow
 	name = "\improper Snow Line"
@@ -30,7 +55,7 @@
 	weather = WEATHER_SNOW
 	ambient_temperature = T0C - 20
 	hazard = "cold"
-	sunlight_freq = 8
+	sunlight_freq = 16
 	sunlight_color = "#898989"
 
 	cheese_type = /reagent/nutrition/cheese/raclette
@@ -42,6 +67,8 @@
 	horde_data = /horde_data/snow
 
 	interior = FALSE
+
+	dynamic_rock_gen_turf = /turf/simulated/wall/rock
 
 /area/mission/desert/interior
 	name = "\improper Cliffside Sea Desert Caves"
@@ -63,8 +90,6 @@
 		'sound/ambient/cave_2.ogg',
 	)
 
-
-
 /area/mission/forest
 	name = "Rael Forest"
 	icon_state = "forest"
@@ -73,7 +98,7 @@
 	ambient_temperature = T0C + 15
 	cheese_type = /reagent/nutrition/cheese/cheddar
 
-	sunlight_freq = 8
+	sunlight_freq = 16
 	sunlight_color = "#CCB06A"
 
 	interior = FALSE
@@ -83,6 +108,7 @@
 
 	horde_data = /horde_data/forest
 
+	dynamic_rock_gen_turf = /turf/simulated/wall/rock/brown
 
 /area/mission/caves
 	name = "\improper Unexplored Caves"
@@ -114,7 +140,7 @@
 	ambient_temperature = T0C + 40
 	cheese_type = /reagent/nutrition/cheese/brabander
 
-	sunlight_freq = 8
+	sunlight_freq = 16
 	sunlight_color = "#29332C"
 
 	interior = FALSE
@@ -132,6 +158,8 @@
 	)
 
 	horde_data = /horde_data/jungle
+
+	dynamic_rock_gen_turf = /turf/simulated/wall/rock/moss
 
 /area/mission/jungle/interior
 	name = "\improper Deep Vinetangle Jungle"
@@ -166,7 +194,7 @@
 	ambient_temperature = T0C + 90
 	cheese_type = /reagent/nutrition/cheese/guava
 
-	sunlight_freq = 8
+	sunlight_freq = 16
 	sunlight_color ="#7F3B11"
 
 	interior = TRUE
@@ -179,6 +207,8 @@
 
 	horde_data = /horde_data/lava
 
+	dynamic_rock_gen_turf = /turf/simulated/wall/rock/basalt
+
 /area/mission/beach
 	name = "Beach"
 	icon_state = "beach"
@@ -187,7 +217,7 @@
 	ambient_temperature = T0C + 30
 	cheese_type = /reagent/nutrition/cheese/cheddar
 
-	sunlight_freq = 8
+	sunlight_freq = 16
 	sunlight_color = "#BCA04B"
 
 	sound_environment = ENVIRONMENT_PLAIN
@@ -202,29 +232,17 @@
 	ambient_temperature = T0C + 40
 	cheese_type = /reagent/nutrition/cheese/cheddar
 
-	sunlight_freq = 8
+	sunlight_freq = 16
 	sunlight_color = "#6B99C4"
 
 	sound_environment = ENVIRONMENT_PLAIN
 
 	horde_data = /horde_data/beach
 
-/area/mission/river
-	name = "\improper Riverways"
-	icon_state = "river"
-
-	weather = null
-	ambient_temperature = T0C + 20
-	cheese_type = /reagent/nutrition/cheese/cheddar
-
-	sunlight_freq = 8
-	sunlight_color = "#93B08C"
-
-	sound_environment = ENVIRONMENT_PLAIN
-
-
 /area/mission/out_of_bounds
 	name = "Out of Bounds"
 	icon_state = "error"
 
 	interior = TRUE
+
+	dynamic_rock_gen_turf = /turf/simulated/wall/rock/indestructable

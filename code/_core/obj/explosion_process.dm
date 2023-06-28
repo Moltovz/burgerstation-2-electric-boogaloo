@@ -33,11 +33,14 @@
 		blacklist[T] = TRUE
 	return ..()
 
+/obj/explosion_process/PreDestroy()
+	SSexplosion.active_explosions -= src
+	. = ..()
+
 /obj/explosion_process/Destroy()
 	owner = null
 	source = null
 	epicenter = null
-	SSexplosion.active_explosions -= src
 	. = ..()
 
 /obj/explosion_process/proc/process()
@@ -52,13 +55,27 @@
 	var/total_direction_mod = 0
 
 	for(var/d in DIRECTIONS_CARDINAL)
-		CHECK_TICK_SAFE(50,FPS_SERVER)
+		CHECK_TICK(50,FPS_SERVER)
 		var/turf/T = get_step(src,d)
 		if(!T) continue
 		if(blacklist[T]) continue
-		if(!T.Enter(src,src.loc))
+
+		if(T.density && !T.Enter(src,src.loc))
 			SSexplosion.add_data(T,owner,source,epicenter,(power*0.9 + original_power*0.1)*multiplier,loyalty_tag)
 			continue
+
+		if(T.has_dense_atom)
+			var/should_continue = FALSE
+			for(var/k in T.contents)
+				var/atom/movable/M = k
+				if(M == src)
+					continue
+				if(M.density && !M.Cross(src,src.loc))
+					should_continue = TRUE
+					SSexplosion.add_data(M,owner,source,epicenter,(power*0.9 + original_power*0.1)*multiplier,loyalty_tag)
+			if(should_continue)
+				continue
+
 		var/obj/explosion_process/existing = locate() in T.contents
 		var/direction_mod = 1
 		if(existing)
@@ -87,7 +104,7 @@
 		total_direction_mod += direction_mod
 
 	for(var/k in valid_turfs)
-		CHECK_TICK_SAFE(50,FPS_SERVER)
+		CHECK_TICK(50,FPS_SERVER)
 		if(!total_direction_mod)
 			break
 		var/new_power_value = valid_turfs[k]

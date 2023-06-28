@@ -38,16 +38,18 @@
 
 	. = ..()
 
-	if(!qdeleting && (next_sell >= world.time || item_contents >= 40))
+	if(next_sell >= world.time || item_contents >= 40)
 
 		var/total_value = 0
 		for(var/obj/item/I in src.contents)
+			if(!I || I.qdeleting)
+				continue
 			if(I.loc != src)
 				continue
 			if(owner_ckey)
 				total_value += I.get_value()
 			qdel(I)
-			CHECK_TICK_SAFE(50,FPS_SERVER)
+			CHECK_TICK(50,FPS_SERVER)
 
 		if(total_value > 0 && owner_ckey)
 			total_value *= 0.25

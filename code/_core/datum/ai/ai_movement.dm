@@ -16,12 +16,13 @@
 
 	return TRUE
 
-/ai/proc/set_move_objective(var/atom/desired_objective,var/follow = FALSE,var/astar = FALSE) //Set follow to true if it should constantly follow the person.
+/ai/proc/set_move_objective(var/atom/desired_objective,var/distance=0,var/astar = FALSE,var/follow = FALSE) //Set follow to true if it should constantly follow the person.
 	if(desired_objective)
 		set_active(TRUE)
 	objective_move = desired_objective
 	should_follow_objective_move = follow
 	should_astar_objective_move = astar
+	objective_move_distance = distance
 	frustration_move = 0
 	return TRUE
 
@@ -67,23 +68,30 @@
 
 /ai/proc/handle_movement_move_objective()
 
-	if(!objective_move)
+	if(!objective_move || objective_attack) //Only move if you actually have an objective, and you don't have an objective attack.
 		return FALSE
 
 	var/turf/T = get_turf(objective_move)
 	var/move_distance = get_dist(owner,T)
 
-	if(move_distance < 1)
+	if(move_distance <= max(1,objective_move_distance)) //We're close, so we can stop following them.
 		if(!should_follow_objective_move)
 			set_move_objective(null)
 		owner.movement_flags = MOVEMENT_WALKING
 		owner.move_dir = 0x0
 		return TRUE
 
-	if(should_astar_objective_move)
-		if(!set_path_fallback(T))
+	if(should_astar_objective_move) //Astar objective following. Makes sure there is no redundent pathing.
+		var/astar_length = length(astar_path_current)
+		var/should_path = TRUE
+		if(astar_length && get_dist(astar_path_current[astar_length],objective_move) < 2)
+			should_path = FALSE
+		var/node_length = length(node_path_current)
+		if(node_length && get_dist(node_path_current[node_length],objective_move) < VIEW_RANGE*0.5)
+			should_path = FALSE
+		if(should_path && !set_path_fallback(T,pathing_object=objective_move))
 			set_move_objective(null) //Failure. Can't get there.
-		return TRUE
+			return FALSE
 
 	owner.move_dir = get_dir(owner,objective_move)
 	if(should_follow_objective_move && move_distance >= 4)
@@ -98,10 +106,23 @@
 	if(!length(astar_path_current))
 		return FALSE
 
-	var/turf/T = get_turf(owner)
+	var/turf/current_turf = get_turf(owner)
+
+	if(astar_path_current_object)
+		var/turf/object_turf = get_turf(astar_path_current_object)
+		if(object_turf)
+			var/current_distance = get_dist(current_turf,object_turf)
+			if(current_distance <= astar_path_current_object_sensitivity_min)
+				set_path_astar(null)
+				return FALSE
+			else if(current_distance >= astar_path_current_object_sensitivity_max)
+				set_path_astar(object_turf,pathing_object=astar_path_current_object)
+				if(!length(astar_path_current))
+					return FALSE
+
 	var/turf/desired_turf = astar_path_current[1]
-	if(T == desired_turf)
-		astar_path_current -= desired_turf
+	if(current_turf == desired_turf)
+		astar_path_current.Cut(1,2)
 		if(length(astar_path_current))
 			desired_turf = astar_path_current[1]
 		else
@@ -109,11 +130,12 @@
 
 	if(desired_turf)
 		owner.move_dir = get_dir(owner,desired_turf)
-	else
-		owner.move_dir = 0x0
-		set_path_astar(null)
+		return TRUE
 
-	return TRUE
+	set_path_astar(null)
+	return FALSE
+
+
 
 /ai/proc/handle_movement_path()
 
@@ -262,6 +284,10 @@
 		last_movement_proc = "move_from_ally"
 		return TRUE
 
+	if(handle_movement_move_objective())
+		last_movement_proc = "move_objective"
+		return TRUE
+
 	if(handle_movement_astar())
 		last_movement_proc = "astar"
 		return TRUE
@@ -272,10 +298,6 @@
 
 	if(handle_movement_attack_objective())
 		last_movement_proc = "attack_objective"
-		return TRUE
-
-	if(handle_movement_move_objective())
-		last_movement_proc = "move_objective"
 		return TRUE
 
 	if(handle_movement_alert())
@@ -306,7 +328,7 @@
 			if(objective_attack && can_attack)
 				spawn do_attack(obstacle,prob(left_click_chance))
 			else
-				set_alert_level(ALERT_LEVEL_CAUTION,FALSE,L,L)
+				set_alert_level(ALERT_LEVEL_CAUTION,L)
 		else
 			move_from_ally = rand(0,3) //Excuse me, Dr. Freeman.
 			move_from_ally_dir = L.move_dir ? turn(L.move_dir,pick(-45,0,45)) : 0x0
@@ -332,6 +354,8 @@
 	if(!node_path_current[node_path_current_step])
 		return FALSE
 
+	obstacles.Cut() //Remove previous obstructions
+
 	var/obj/marker/map_node/desired_node = node_path_current[node_path_current_step]
 	var/turf/T1 = get_turf(owner)
 	var/list/obstructions = get_obstructions(T1,desired_node,ignore_living=TRUE)
@@ -341,15 +365,19 @@
 
 	var/turf/T2 = locate(desired_node.x,desired_node.y,desired_node.z)
 
-	if(set_path_astar(T2)) //Okay we found obstructions, but can we path through it?
+	if(set_path_astar(T2)) //Okay we found obstructions, but we can path through it.
 		return TRUE
 
 	for(var/k in obstructions) //Can't path though it, so we destroy it.
 		var/atom/A = k
 		if(!A.can_be_attacked(owner)) //Can't even destroy it. Just give up.
-			obstacles.Cut()
 			set_path_node(null)
 			break //Give up.
 		obstacles[A] = TRUE
 
-	return TRUE
+	//DEBUG STUFF
+	if(objective_attack && is_player(objective_attack))
+		objective_attack << "Obstacles: [obstacles]."
+
+
+	return length(obstacles)

@@ -7,17 +7,14 @@ SUBSYSTEM_DEF(advanced_thinking)
 
 	tick_usage_max = 75
 
-	preloop = TRUE
-
 /subsystem/advanced_thinking/unclog(var/mob/caller)
 	for(var/k in src.all_thinkers)
 		all_thinkers -= k
-	broadcast_to_clients(span("danger","Stopped all thinkers."))
 	return ..()
 
 /subsystem/advanced_thinking/on_life()
 	for(var/k in all_thinkers)
-		CHECK_TICK_SAFE(tick_usage_max,FPS_SERVER)
+		CHECK_TICK(tick_usage_max,FPS_SERVER)
 		var/atom/A = k
 		if(!A || A.qdeleting)
 			all_thinkers -= A

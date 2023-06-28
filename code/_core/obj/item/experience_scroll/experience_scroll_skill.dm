@@ -3,6 +3,8 @@
 
 	overlay_icon_state = "gem"
 
+	value = 1
+
 /obj/item/experience_scroll/skill/get_base_value()
 	if(!skill)
 		return 0
@@ -88,6 +90,7 @@
 
 	overlay_color = COLOR_BLUE
 
+/*
 /obj/item/experience_scroll/skill/lesser
 	name = "skill manual"
 	desc = "Knowledge in the palms of your hands."
@@ -145,3 +148,4 @@
 /obj/item/experience_scroll/skill/lesser/medicine
 	name = "first aid booklet"
 	skill = SKILL_MEDICINE
+*/

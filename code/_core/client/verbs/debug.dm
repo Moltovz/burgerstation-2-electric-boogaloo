@@ -2,7 +2,6 @@ var/global/list/debug_verbs = list(
 	/client/verb/make_war,
 	/client/verb/stealth_test,
 	/client/verb/check_lights,
-	/client/verb/subsystem_report,
 	/client/verb/reload_badwords,
 	/client/verb/force_save_all,
 	/client/verb/stress_test,
@@ -192,7 +191,7 @@ var/global/list/destroy_everything_whitelist = list(
 			else
 				error_tiles++
 
-			CHECK_TICK_HARD(DESIRED_TICK_LIMIT)
+			CHECK_TICK_HARD
 
 	to_chat("Found [found_tiles] tiles, with [error_tiles] errored tiles.")
 	to_chat("Icon: [new/image(I)].")
@@ -214,12 +213,12 @@ var/global/list/destroy_everything_whitelist = list(
 	var/list/turf/possible_SY = list()
 
 	for(var/turf/simulated/floor/F in range(src.view*0.4,N_T))
-		if(F.is_occupied(PLANE_OBJ))
+		if(F.is_occupied(PLANE_MOVABLE))
 			continue
 		possible_NT += F
 
 	for(var/turf/simulated/floor/F in range(src.view*0.4,S_T))
-		if(F.is_occupied(PLANE_OBJ))
+		if(F.is_occupied(PLANE_MOVABLE))
 			continue
 		possible_SY += F
 
@@ -278,24 +277,6 @@ var/global/list/destroy_everything_whitelist = list(
 
 	qdel(dummy_datum)
 
-/client/verb/subsystem_report()
-
-	set name = "Subsystem Report"
-	set category = "Debug"
-
-	var/report_string = "<h2>Subsystem Report</h2>"
-
-	for(var/k in active_subsystems)
-		var/subsystem/S = k
-		if(S.last_run_duration || S.total_run_duration)
-			report_string += "<b>[S.name]</b>: <pre>LAST: [S.last_run_duration], TOTAL: [S.total_run_duration].</pre><br>"
-
-	report_string += "Subsystems that aren't listed have no registered overtime."
-
-	to_chat(report_string)
-
-	SSreport.make_report()
-
 /client/verb/reload_badwords()
 	set name = "Reload Badwords"
 	set category = "Debug"
@@ -338,7 +319,7 @@ var/global/list/destroy_everything_whitelist = list(
 	var/list/spawned_mobs = list()
 
 	for(var/i=1,i<=50,i++)
-		CHECK_TICK_SAFE(50,FPS_SERVER)
+		CHECK_TICK(50,FPS_SERVER)
 		var/mob/living/advanced/npc/nanotrasen/ST = new(pick(valid_turfs))
 		INITIALIZE(ST)
 		GENERATE(ST)
@@ -349,7 +330,7 @@ var/global/list/destroy_everything_whitelist = list(
 		for(var/k in spawned_mobs)
 			var/mob/living/L = k
 			if(L.ai)
-				L.ai.set_move_objective(src.mob,TRUE)
+				L.ai.set_move_objective(src.mob,astar=TRUE,follow=TRUE)
 
 
 /client/verb/create_vote()

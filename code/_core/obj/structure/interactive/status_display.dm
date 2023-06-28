@@ -24,7 +24,7 @@ var/global/list/status_displays = list()
 	var/screen_color = "#000000"
 	var/frame_color = "#888888"
 
-	plane = PLANE_OBJ
+	plane = PLANE_MOVABLE
 
 	desired_light_power = 0.25
 	desired_light_range = 2
@@ -76,7 +76,7 @@ var/global/list/status_displays = list()
 		status_displays[status_id] += src
 	return ..()
 
-/obj/structure/interactive/status_display/global_display/Destroy()
+/obj/structure/interactive/status_display/global_display/PreDestroy()
 	if(status_displays[status_id])
 		status_displays[status_id] -= src
 	. = ..()
